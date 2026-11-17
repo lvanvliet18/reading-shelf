@@ -17,7 +17,7 @@ const READ_STATUS = (process.env.STATUS_READ || 'read').toLowerCase();
 const API = 'https://api.notion.com/v1';
 const headers = () => ({
   Authorization: 'Bearer ' + process.env.NOTION_TOKEN,
-  'Notion-Version': '2022-06-28',
+  'Notion-Version': '2025-09-03',
   'Content-Type': 'application/json',
 });
 
@@ -27,10 +27,21 @@ async function notion(path, opts) {
   return r.json();
 }
 
+// Notion now queries a database through its "data source". Accept either kind of ID.
+async function sourceId(id) {
+  id = id.replace(/-/g, '').match(/[0-9a-f]{32}/i)?.[0] || id; // also accepts a full Notion URL
+  try {
+    const db = await notion('/databases/' + id);
+    if (db.data_sources && db.data_sources[0]) return db.data_sources[0].id;
+  } catch (e) { /* not a database ID: assume it is already a data source ID */ }
+  return id;
+}
+
 async function queryAll(dbId) {
+  const ds = await sourceId(dbId);
   let out = [], cursor;
   do {
-    const j = await notion('/databases/' + dbId + '/query', {
+    const j = await notion('/data_sources/' + ds + '/query', {
       method: 'POST',
       body: JSON.stringify({ page_size: 100, start_cursor: cursor }),
     });
@@ -57,6 +68,10 @@ async function namesFor(ids) {
   return names;
 }
 
+// Find a property by name, ignoring capitals, spaces and brackets ("Date Finished" = "date finished").
+const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const prop = (pr, name) => pr[name] || pr[Object.keys(pr).find((k) => norm(k) === norm(name))];
+
 const relIds = (p) => (p && p.type === 'relation' ? p.relation.map((x) => x.id) : []);
 const titleCase = (s) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 const dateOf = (p) => (p && p.type === 'date' && p.date ? p.date.start.slice(0, 10) : null);
@@ -72,39 +87,53 @@ function ratingOf(p) {
 
 module.exports = async (req, res) => {
   try {
+    // Private shelf: only answer when the link carries your key (?key=...). Set SHELF_KEY in Vercel.
+    if (process.env.SHELF_KEY && req.query.key !== process.env.SHELF_KEY)
+      return res.status(401).json({ error: 'This shelf is private.' });
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_BOOKS_DB)
       return res.status(500).json({ error: 'Set NOTION_TOKEN and NOTION_BOOKS_DB in Vercel.' });
 
     const year = String(req.query.year || new Date().getFullYear());
     const pages = await queryAll(process.env.NOTION_BOOKS_DB);
 
+    // ?fields=1 lists your property names, their types, and how many books have each filled in (no values).
+    if (req.query.fields) {
+      const out = {};
+      for (const pg of pages) for (const [k, v] of Object.entries(pg.properties)) {
+        out[k] = out[k] || { type: v.type, filled: 0 };
+        const val = v[v.type];
+        if (val !== null && val !== false && !(Array.isArray(val) && !val.length)) out[k].filled++;
+      }
+      return res.status(200).json({ books: pages.length, fields: out });
+    }
+
     // keep finished books whose finish (or start) date falls in the chosen year
     const mine = pages.filter((pg) => {
-      const st = pg.properties[PROPS.status];
+      const st = prop(pg.properties, PROPS.status);
       const name = st && (st.status || st.select) ? (st.status || st.select).name.toLowerCase() : '';
       if (name !== READ_STATUS) return false;
       if (year === 'all') return true;
-      const d = dateOf(pg.properties[PROPS.finished]) || dateOf(pg.properties[PROPS.started]);
+      const d = dateOf(prop(pg.properties, PROPS.finished)) || dateOf(prop(pg.properties, PROPS.started));
       return d && d.startsWith(year);
     });
 
     const names = await namesFor(mine.flatMap((pg) => [
-      ...relIds(pg.properties[PROPS.author]).slice(0, 1),
-      ...relIds(pg.properties[PROPS.genre]).slice(0, 1),
+      ...relIds(prop(pg.properties, PROPS.author)).slice(0, 1),
+      ...relIds(prop(pg.properties, PROPS.genre)).slice(0, 1),
     ]));
 
     const books = mine.map((pg) => {
       const pr = pg.properties;
-      const fin = dateOf(pr[PROPS.finished]);
-      const start = dateOf(pr[PROPS.started]);
+      const fin = dateOf(prop(pr, PROPS.finished));
+      const start = dateOf(prop(pr, PROPS.started));
       const n = fin && start ? Math.max(1, Math.round((new Date(fin) - new Date(start)) / 864e5)) : null;
-      const r = ratingOf(pr[PROPS.rating]);
-      const favBox = pr[PROPS.favourite];
+      const r = ratingOf(prop(pr, PROPS.rating));
+      const favBox = prop(pr, PROPS.favourite);
       return {
         t: titleOf(pg) || 'Untitled',
-        a: names[relIds(pr[PROPS.author])[0]] || 'Unknown',
-        g: (names[relIds(pr[PROPS.genre])[0]] || 'other').toLowerCase(),
-        p: pr[PROPS.pages] && pr[PROPS.pages].number ? pr[PROPS.pages].number : null,
+        a: names[relIds(prop(pr, PROPS.author))[0]] || 'Unknown',
+        g: (names[relIds(prop(pr, PROPS.genre))[0]] || 'other').toLowerCase(),
+        p: prop(pr, PROPS.pages) && prop(pr, PROPS.pages).number ? prop(pr, PROPS.pages).number : null,
         r,
         d: fin,
         n,

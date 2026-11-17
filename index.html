@@ -148,7 +148,8 @@ const SAMPLE=[
 {t:'Piranesi',a:'Susanna Clarke',g:'fantasy',p:272,r:5,d:'2026-11-03',n:5,f:1,note:'A quiet, luminous puzzle box. Read it slowly.'},
 {t:'The Song of Achilles',a:'Madeline Miller',g:'romance',p:378,r:5,d:'2026-10-02',n:6,f:1},
 {t:'Pride and Prejudice',a:'Jane Austen',g:'romance',p:279,r:4,d:'2026-10-20',n:5}];
-let live=false,base=SAMPLE,mine=store.get('mine',[]),books=[...SAMPLE,...mine],sort='date read',sel=null;
+const Q=new URLSearchParams(location.search),KEY=Q.get('key')||'',DEMO=Q.has('demo');
+let live=false,base=[],mine=[],books=[],sort='date read',sel=null;
 const SORTS={'date read':(a,b)=>(a.d||'').localeCompare(b.d||''),'rating':(a,b)=>b.r-a.r||(a.d||'').localeCompare(b.d||''),'genre':(a,b)=>a.g.localeCompare(b.g),'length':(a,b)=>(a.p||0)-(b.p||0)};
 const ink=hex=>{const n=parseInt(hex.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>160?'#3a2418':'#f6e7c1'};
 const sw=b=>Math.max(28,Math.min(50,18+(b.p||320)/26));
@@ -212,9 +213,18 @@ $('#bf').addEventListener('submit',e=>{
 let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(shelf,150)});
 $('#meta').textContent='loading your shelf…';
 (async()=>{
-  try{const r=await fetch('/api/books');if(!r.ok)throw 0;const j=await r.json();
-    if(Array.isArray(j.books)){base=j.books;live=true;if(Array.isArray(j.genres)&&j.genres.length)setGenres(j.genres);books=[...base,...mine];if(j.year&&j.year!=='all')$('h1 em').textContent=j.year}}catch(e){}
+  let msg='';
+  if(DEMO){base=SAMPLE;mine=store.get('mine',[]);books=[...base,...mine]}   // ?demo shows the sample shelf
+  else try{
+    const yr=Q.get('year'),qs=new URLSearchParams({key:KEY});if(yr)qs.set('year',yr);
+    const r=await fetch('/api/books?'+qs);const j=await r.json().catch(()=>({}));
+    if(r.status===401)msg='This shelf is private. Open it from your Notion embed link.';
+    else if(!r.ok)msg='Couldn’t reach Notion: '+(j.error||r.status);
+    else if(Array.isArray(j.books)){base=j.books;live=true;if(Array.isArray(j.genres)&&j.genres.length)setGenres(j.genres);books=base;if(j.year&&j.year!=='all')$('h1 em').textContent=j.year}
+  }catch(e){msg='Couldn’t load your shelf. Try refreshing.'}
+  if(!DEMO)$('.addrow').hidden=true;   // add books in Notion; the shelf updates within ~5 minutes
   shelf();panel();
+  if(msg)$('#meta').textContent=msg;
 })();
 </script>
 </body></html>
