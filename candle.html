@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>reading candle</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<style>
+/* Same frame as "my shelf": white page, triple pink card border, label on the border, 270px side card. Single light look on purpose. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;--paper:#fff}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:30px 14px 36px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:30px 16px;align-items:start}
+@media(min-width:780px){.layout{grid-template-columns:minmax(0,1fr) 270px}}
+.stack{display:grid;gap:30px;min-width:0}
+.card{position:relative;background:var(--paper);border:2px solid var(--pink);border-radius:22px;padding:26px 22px 22px}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.card.side{display:flex;flex-direction:column}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+h1{font:700 38px/1.05 var(--serif);margin:2px 0 4px;text-wrap:balance}
+h1 em{font-style:italic;color:var(--pink);font-weight:600}
+.meta{color:var(--muted);font-size:13px}.meta b{color:var(--green)}
+
+.nook{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-top:16px}
+@media(min-width:640px){.nook{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:center}}
+
+/* the library nook: daylight when unlit, candlelit dusk when lit */
+.stage{position:relative;height:470px;border-radius:14px;overflow:hidden;background:#f7e4e8;box-shadow:inset 0 0 0 1px #f0d3dc}
+.stage #bg{position:absolute;inset:0;width:100%;height:100%}
+.dim{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.6s ease;
+background:radial-gradient(ellipse 70% 60% at 50% 38%,rgba(70,32,30,.38),rgba(28,14,18,.84) 75%)}
+.warm{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.6s ease;
+background:radial-gradient(circle at 50% var(--fy,30%),rgba(255,196,120,.42),rgba(255,170,90,.12) 28%,transparent 52%)}
+.stage.lit .dim,.stage.lit .warm{opacity:1}
+.stage #cv{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);width:min(96%,400px);height:auto;overflow:visible}
+.swatches{position:absolute;top:12px;right:12px;z-index:2;display:flex;gap:6px;padding:5px 7px;border-radius:999px;background:rgba(255,255,255,.78)}
+.sw{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.18);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{outline:2px solid var(--pink);outline-offset:2px}
+
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.state{font:700 11px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.state b{color:var(--pink)}
+.clock{font:600 72px/0.95 var(--serif);font-variant-numeric:tabular-nums;color:#111}
+.with{font:500 20px/1.2 var(--serif);color:var(--muted);margin-top:-4px}
+.with em{color:var(--pink);font-weight:600}
+.field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:400 13px var(--font);border:1px solid var(--pink-mid);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.chip:disabled{opacity:.45;cursor:default}
+input[type=text],input[type=number],input:not([type]){font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--pink-mid);background:var(--paper);border-radius:12px;padding:8px 10px;min-width:0;width:100%}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:700 14px var(--font);border:0;border-radius:999px;padding:11px 24px;cursor:pointer;background:var(--pink);color:#fff}
+.btn.alt{background:var(--green-soft);color:var(--green)}
+.btn:disabled{opacity:.4;cursor:default}
+.link{font:600 13px var(--font);background:none;border:0;color:var(--green);cursor:pointer;padding:6px 4px;text-decoration:underline;text-underline-offset:3px}
+.link:disabled{opacity:.35;cursor:default;text-decoration:none}
+.logrow{border:1px solid var(--pink-lt);background:#fff6fa;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.logrow p{margin:0;font:500 17px/1.3 var(--serif)}
+.logrow .acts input{width:110px;flex:none}
+.chip:focus-visible,.sw:focus-visible,.btn:focus-visible,.link:focus-visible,.tile:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* soundscape */
+.shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.shead h2{font:700 28px/1.1 var(--serif);margin:0}
+.shead h2 em{font-style:italic;color:var(--pink);font-weight:600}
+.hint{font-size:12px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin:14px 0}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 6px 12px;border:1px solid var(--pink-mid);border-radius:16px;background:var(--paper);color:var(--ink);font:500 13px var(--font);cursor:pointer}
+.tile svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tile[aria-pressed="true"]{background:var(--pink-lt);border-color:var(--pink);color:var(--pink)}
+.tile[aria-pressed="true"]::after{content:"";position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--pink);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.vol{display:grid;grid-template-columns:auto minmax(0,1fr) 3.2em;gap:12px;align-items:center;font-size:13px;margin-bottom:12px}
+.vol output{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--pink)}
+
+/* side card */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#fff6fa;border:1px solid var(--pink-lt);border-radius:12px;padding:9px 11px}
+.stat b{display:block;font:700 22px/1.15 var(--font);color:#111;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:#111}
+.sub{font:700 11px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin:18px 0 8px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:92px}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font-size:11px;color:var(--muted)}
+.bar i{display:block;width:100%;max-width:22px;border-radius:6px 6px 2px 2px;background:var(--pink-mid);min-height:3px}
+.bar.today i{background:var(--pink)}
+.bar.today{color:var(--pink);font-weight:700}
+.bar small{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.list{display:flex;flex-direction:column;border-top:1px solid var(--pink-mid)}
+.list div{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--pink-lt);align-items:baseline}
+.list em{font:600 16px/1.2 var(--serif);color:#111;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list span{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font:italic 500 16px var(--serif);padding:8px 0}
+.foot{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.tag{font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:4px 8px}
+
+/* flame */
+.flame{transform-box:fill-box;transform-origin:50% 92%;animation:flick 1.7s ease-in-out infinite}
+.glow{animation:glow 2.3s ease-in-out infinite}
+@keyframes flick{0%,100%{transform:scale(1,1) skewX(0)}22%{transform:scale(.95,1.06) skewX(2.5deg)}48%{transform:scale(1.04,.96) skewX(-1.5deg)}71%{transform:scale(.97,1.04) skewX(1.2deg)}}
+@keyframes glow{0%,100%{opacity:.9}40%{opacity:.72}70%{opacity:1}}
+.smoke{opacity:0}
+.smoke.go{animation:smoke 2.6s ease-out forwards}
+@keyframes smoke{0%{opacity:.7;transform:translateY(0)}100%{opacity:0;transform:translateY(-50px)}}
+@media (prefers-reduced-motion:reduce){.flame,.glow,.tile::after{animation:none}.smoke.go{animation:none}.dim,.warm{transition:none}}
+</style>
+
+<main>
+<div class="layout">
+<div class="stack">
+<section class="card">
+  <span class="lbl">The reading nook</span>
+  <h1>light the <em>candle</em></h1>
+  <div class="meta">The pillar burns down while you read · <b id="metaDur">45 min</b> sitting</div>
+  <div class="nook">
+    <div class="stage" id="stage">
+      <svg id="bg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
+      <div class="dim"></div><div class="warm" id="warm"></div>
+      <svg id="cv" viewBox="0 0 420 450" role="img" aria-label="A pink pillar candle on an antique gold stand">
+        <defs>
+          <linearGradient id="wax" x1="0" x2="1"><stop offset="0" style="stop-color:var(--w0)"/><stop offset=".22" style="stop-color:var(--w1)"/><stop offset=".5" style="stop-color:var(--w2)"/><stop offset=".78" style="stop-color:var(--w1)"/><stop offset="1" style="stop-color:var(--w0)"/></linearGradient>
+          <linearGradient id="lipG" x1="0" x2="1"><stop offset="0" style="stop-color:var(--w1)"/><stop offset=".3" style="stop-color:var(--w3)"/><stop offset=".62" style="stop-color:var(--w3)"/><stop offset="1" style="stop-color:var(--w1)"/></linearGradient>
+          <radialGradient id="poolG" cx=".5" cy=".6" r=".6"><stop offset="0" style="stop-color:var(--w4)"/><stop offset=".75" style="stop-color:var(--w4)"/><stop offset="1" style="stop-color:var(--w1)"/></radialGradient>
+          <linearGradient id="goldH" x1="0" x2="1"><stop offset="0" stop-color="#8a6418"/><stop offset=".2" stop-color="#d9a93c"/><stop offset=".42" stop-color="#fbe39a"/><stop offset=".58" stop-color="#f0c95e"/><stop offset=".82" stop-color="#b8862a"/><stop offset="1" stop-color="#7a5612"/></linearGradient>
+          <linearGradient id="goldT" x1="0" y1="0" x2="1" y2=".3"><stop offset="0" stop-color="#c8952e"/><stop offset=".35" stop-color="#fff0b8"/><stop offset=".6" stop-color="#f3cf6a"/><stop offset="1" stop-color="#a87a22"/></linearGradient>
+          <radialGradient id="glowG"><stop offset="0" stop-color="#ffd38a" stop-opacity=".7"/><stop offset=".35" stop-color="#ffb35c" stop-opacity=".25"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+          <radialGradient id="flameG" cx=".5" cy=".82" r=".75"><stop offset="0" stop-color="#fffef4"/><stop offset=".3" stop-color="#fff3bf"/><stop offset=".6" stop-color="#ffd166"/><stop offset=".86" stop-color="#ffa53a" stop-opacity=".85"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>
+          <radialGradient id="stamen" cx=".45" cy=".4"><stop offset="0" stop-color="#f7c46a"/><stop offset=".7" stop-color="#e79a3a"/><stop offset="1" stop-color="#c98a14"/></radialGradient>
+          <linearGradient id="leafG" x1="0" x2="1"><stop offset="0" stop-color="#6aa84f"/><stop offset=".5" stop-color="#3f7d32"/><stop offset="1" stop-color="#285a20"/></linearGradient>
+          <linearGradient id="budG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e98aa8"/><stop offset="1" stop-color="#fad3df"/></linearGradient>
+          <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+        </defs>
+        <circle class="glow" id="glow" cx="210" cy="40" r="200" fill="url(#glowG)" opacity="0"/>
+        <ellipse cx="210" cy="434" rx="168" ry="13" fill="rgba(90,60,40,.3)" filter="url(#soft)"/>
+        <!-- gold stand -->
+        <ellipse cx="210" cy="426" rx="142" ry="18" fill="#7a5612"/>
+        <ellipse cx="210" cy="419" rx="142" ry="18" fill="url(#goldH)"/>
+        <ellipse cx="210" cy="411" rx="136" ry="16" fill="url(#goldT)"/>
+        <ellipse cx="210" cy="411" rx="136" ry="16" fill="none" stroke="#fff6cf" stroke-opacity=".6" stroke-width="1.2"/>
+        <ellipse cx="210" cy="404" rx="120" ry="13" fill="url(#goldH)"/>
+        <ellipse cx="210" cy="398" rx="114" ry="12" fill="url(#goldT)"/>
+        <path d="M100 360 V396 A110 12 0 0 0 320 396 V360Z" fill="url(#goldH)"/>
+        <path d="M100 378 A110 12 0 0 0 320 378" fill="none" stroke="#7a5612" stroke-opacity=".5" stroke-width="1.5"/>
+        <path d="M100 382 A110 12 0 0 0 320 382" fill="none" stroke="#fff3c4" stroke-opacity=".55" stroke-width="1.2"/>
+        <ellipse cx="210" cy="360" rx="110" ry="12" fill="url(#goldT)"/><ellipse cx="210" cy="360" rx="104" ry="10" fill="none" stroke="#fff6cf" stroke-opacity=".6" stroke-width="1.2"/><ellipse cx="210" cy="361" rx="66" ry="8" fill="rgba(90,60,20,.25)"/>
+        <g id="candle">
+          <ellipse cx="210" cy="360" rx="60" ry="8" fill="url(#wax)"/><rect id="body" x="150" y="70" width="120" height="290" fill="url(#wax)"/>
+          <g id="ctop"></g>
+          <g id="smokeWrap"><path class="smoke" id="smoke" d="M211 52 c-6 -8 6 -14 0 -22 c-5 -7 5 -12 1 -18" stroke="rgba(150,140,135,.75)" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+          <g id="flamePos" transform="translate(211 56)" opacity="0">
+            <g transform="scale(1.25)"><g class="flame">
+              <path d="M0 -42 C7 -28 11 -15 10 -6 C9 2 5 5 0 5 C-5 5 -9 2 -10 -6 C-11 -15 -7 -28 0 -42Z" fill="url(#flameG)"/>
+              <path d="M0 -24 C3.5 -16 5 -9 4.5 -4 C4 0 2 2 0 2 C-2 2 -4 0 -4.5 -4 C-5 -9 -3.5 -16 0 -24Z" fill="#fffdf0" opacity=".9"/>
+              <ellipse cx="0" cy="1" rx="3.4" ry="4.2" fill="#ff9d4a" opacity=".45"/>
+            </g></g>
+          </g>
+        </g>
+        
+      </svg>
+    </div>
+
+    <div class="panel">
+      <div class="state" id="state">ready</div>
+      <div class="clock" id="clock">45:00</div>
+      <div class="with">with <em id="withBook">Piranesi</em></div>
+      <label class="field" for="book">reading
+        <input id="book" type="text" list="shelfBooks" placeholder="what are you reading?" autocomplete="off"></label>
+      <datalist id="shelfBooks"><option value="Piranesi"><option value="Rebecca"><option value="Babel"><option value="Circe"><option value="The Secret History"><option value="Jane Eyre"><option value="Pride and Prejudice"></datalist>
+      <div class="chips" id="durs" role="group" aria-label="Sitting length"></div>
+      <div class="acts">
+        <button class="btn" id="go">light the candle</button>
+        <button class="btn alt" id="fin" disabled>snuff it out</button>
+        <button class="link" id="reset" disabled>reset</button>
+      </div>
+      <div class="hint" id="note" aria-live="polite"></div>
+      <div class="logrow" id="logrow" hidden>
+        <p id="logmsg"></p>
+        <div class="acts">
+          <input id="pages" type="number" min="0" inputmode="numeric" placeholder="pages read" aria-label="Pages read">
+          <button class="btn" id="save">log it</button>
+          <button class="link" id="skip">don't log</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <span class="lbl">Soundscape</span>
+  <div class="shead"><h2>set the <em>mood</em></h2><span class="hint">Tap to layer sounds · made live in your browser</span></div>
+  <div class="tiles" id="tiles" role="group" aria-label="Sounds"></div>
+  <div class="vol"><label for="vol">Volume</label><input type="range" id="vol" min="0" max="100" value="70"><output id="volv" for="vol">70%</output></div>
+  <div class="chips" id="presets" role="group" aria-label="Sound presets"></div>
+</section>
+</div>
+
+<aside class="card side">
+  <span class="lbl">Reading log</span>
+  <div class="stats">
+    <div class="stat"><b id="sToday">0</b><span>minutes today</span></div>
+    <div class="stat"><b id="sPages">0</b><span>pages today</span></div>
+    <div class="stat"><b id="sWeek">0</b><span>sittings this week</span></div>
+    <div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
+  </div>
+  <div class="sub">Last 7 days</div>
+  <div class="week" id="week"></div>
+  <div class="sub">Recent sittings</div>
+  <div class="list" id="list"></div>
+  <div class="foot" id="foot"></div>
+</aside>
+</div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return dayKey(d)};
+const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const f=n=>(+n).toFixed(1);
+
+/* ================= library backdrop ================= */
+(function library(){
+  const r=rng(7),BOOK=['#f2b8c6','#f7d4dc','#e9a3b8','#fbe7ea','#dcc6e8','#cfe0cf','#f4e4c1','#fffaf5','#e7b7c9','#d4b0cf','#f3d2b0','#f9c9d6','#c9a7c7'];
+  let s=`<defs>
+  <pattern id="paper" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="#f8e7ea"/><rect width="11" height="22" fill="#f5dfe4"/><circle cx="11" cy="11" r="1.4" fill="#efcdd6"/></pattern>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdf6f2"/><stop offset="1" stop-color="#f6dbe2"/></linearGradient>
+  <linearGradient id="curt" x1="0" x2="1"><stop offset="0" stop-color="#f4c3d1" stop-opacity=".85"/><stop offset=".3" stop-color="#fbe2ea" stop-opacity=".7"/><stop offset=".55" stop-color="#f1b9c9" stop-opacity=".85"/><stop offset=".8" stop-color="#fbe2ea" stop-opacity=".7"/><stop offset="1" stop-color="#f0b5c6" stop-opacity=".85"/></linearGradient>
+  <linearGradient id="spine" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".35" stop-color="#fff" stop-opacity=".18"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+  <linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1e9ea"/><stop offset=".5" stop-color="#fffdfd"/><stop offset="1" stop-color="#faf5f5"/></linearGradient>
+  <linearGradient id="drape" x1="0" spreadMethod="repeat" gradientUnits="userSpaceOnUse" x2="64"><stop offset="0" stop-color="#efe6e7"/><stop offset=".45" stop-color="#ffffff"/><stop offset=".75" stop-color="#f7f1f1"/><stop offset="1" stop-color="#efe6e7"/></linearGradient>
+  <filter id="dof"><feGaussianBlur stdDeviation="1.4"/></filter></defs>
+  <g filter="url(#dof)"><rect width="800" height="500" fill="url(#paper)"/>`;
+  // arched window with sheer curtains
+  s+=`<path d="M300 352V150A100 100 0 0 1 500 150V352Z" fill="url(#sky)"/>
+  <ellipse cx="430" cy="120" rx="60" ry="22" fill="#fff" opacity=".7"/><ellipse cx="365" cy="170" rx="45" ry="15" fill="#fff" opacity=".55"/>
+  <path d="M300 352V150A100 100 0 0 1 500 150V352" fill="none" stroke="#fdf7f0" stroke-width="16"/>
+  <path d="M308 352V150A92 92 0 0 1 492 150V352" fill="none" stroke="#d9b46a" stroke-width="2"/>
+  <path d="M400 58V352M308 200H492M308 276H492M400 150L335 85M400 150L465 85" stroke="#fdf7f0" stroke-width="6"/>
+  <path d="M276 30C300 140 282 250 302 352H250C238 250 262 140 238 30Z" fill="url(#curt)"/>
+  <path d="M524 30C500 140 518 250 498 352H550C562 250 538 140 562 30Z" fill="url(#curt)"/>
+  <path d="M232 26Q400 78 568 26V40Q400 96 232 40Z" fill="#f2bccb" opacity=".9"/>
+  <path d="M232 22H568" stroke="#d9b46a" stroke-width="4" stroke-linecap="round"/>`;
+  // two cream bookcases
+  [[14,262],[538,786]].forEach(([x0,x1])=>{
+    s+=`<rect x="${x0}" y="22" width="${x1-x0}" height="340" fill="#fbf5ee"/><rect x="${x0-6}" y="14" width="${x1-x0+12}" height="14" rx="3" fill="#fdf9f3" stroke="#e8d8c6"/>
+    <rect x="${x0+12}" y="36" width="${x1-x0-24}" height="320" fill="#ecd9d3"/>`;
+    [96,166,236,306].forEach(y=>s+=`<rect x="${x0+12}" y="${y}" width="${x1-x0-24}" height="9" fill="#fdf8f2"/><rect x="${x0+12}" y="${y+9}" width="${x1-x0-24}" height="6" fill="#000" opacity=".06"/>`);
+    [96,166,236,306,356].forEach(bot=>{
+      let x=x0+16;const end=x1-16;
+      while(x<end-8){
+        const roll=r();
+        if(roll<.07&&x<end-40){ // flower vase
+          s+=`<path d="M${x+6} ${bot}h18l-3-22h-12z" fill="#fff" stroke="#e3cfd3"/>`;
+          for(let k=0;k<6;k++)s+=`<circle cx="${f(x+15+(r()-.5)*22)}" cy="${f(bot-30-r()*14)}" r="${f(4+r()*3)}" fill="${['#f4a9c0','#f9d0dc','#fff'][k%3]}"/>`;
+          x+=34;continue}
+        if(roll<.14&&x<end-40){ // stack of lying books
+          let y=bot;for(let k=0;k<3;k++){const h=7+r()*3;s+=`<rect x="${f(x+k*1.5)}" y="${f(y-h)}" width="${f(30-k*3)}" height="${f(h)}" rx="1" fill="${BOOK[(r()*BOOK.length)|0]}" stroke="#d8bfc5" stroke-width=".5"/>`;y-=h}
+          x+=36;continue}
+        const w=9+r()*10,h=42+r()*20,c=BOOK[(r()*BOOK.length)|0];
+        if(x+w>end)break;
+        s+=`<rect x="${f(x)}" y="${f(bot-h)}" width="${f(w)}" height="${f(h)}" rx="1.4" fill="${c}"/><rect x="${f(x)}" y="${f(bot-h)}" width="${f(w)}" height="${f(h)}" rx="1.4" fill="url(#spine)"/>`;
+        if(r()<.6)s+=`<rect x="${f(x)}" y="${f(bot-h+6)}" width="${f(w)}" height="1.6" fill="#d9b46a"/><rect x="${f(x)}" y="${f(bot-9)}" width="${f(w)}" height="1.6" fill="#d9b46a"/>`;
+        x+=w+.8+(r()<.08?6:0);
+      }
+    });
+  });
+  s+=`</g>`;
+  // white tablecloth with lace edge
+  s+=`<path d="M-10 360H810V438H-10Z" fill="url(#cloth)"/><path d="M-10 360H810" stroke="#e5d6d8" stroke-width="2"/>
+  <rect x="-10" y="438" width="820" height="70" fill="url(#drape)"/>`;
+  for(let x=-8;x<812;x+=16){s+=`<circle cx="${x}" cy="440" r="8.5" fill="#fff" stroke="#e8dadc"/><circle cx="${x}" cy="441" r="2.2" fill="#f1e5e7"/>`}
+  s+=`<path d="M-10 436H810" stroke="#fff" stroke-width="5"/><path d="M-10 432H810" stroke="#eadcde" stroke-width="1" stroke-dasharray="3 3"/>`;
+  $('#bg').innerHTML=s;
+})();
+
+/* ================= candle ================= */
+/* wax: edge, mid, light, lip, pool, drip */
+const WAX={ivory:['#d6c39c','#ecdfc0','#fcf6e8','#fffaf0','#f6ecd7','#fffaf2'],pink:['#cf5f88','#ea88ab','#f5a8c3','#f8bcd2','#f9cfdf','#f9c3d7'],sage:['#7c977d','#a9c0a8','#d0e0cd','#dde9da','#e6efe3','#e3ede0'],claret:['#5e1a2b','#86283f','#a8435a','#b8566b','#9b3a52','#c4677d'],honey:['#b5822f','#dcae5c','#f1d08c','#f6dca2','#f4d79a','#f9e2b3']};
+const DURS=[[15,'15 min'],[25,'25 min'],[45,'45 min'],[60,'1 hour'],[0,'open-ended']];
+const OPEN_BURN=90;
+let S=Object.assign({dur:45,color:'ivory',book:'Piranesi',running:false,startedAt:0,before:0},store.get('nook-timer',{}));
+S.color='pink';
+let sessions=store.get('nook-sessions',null);
+const SAMPLE=[[0,'Piranesi',32,41],[1,'Rebecca',50,62],[2,'Rebecca',25,30],[3,'Babel',45,38],[5,'Babel',60,55],[6,'Circe',20,24]].map(([o,b,m,p])=>({d:daysAgo(o),b,m,p,sample:true}));
+const all=()=>sessions===null?SAMPLE:sessions;
+const save=()=>store.set('nook-timer',S);
+
+const DR=[[149,16,20],[172,13,40],[192,12,16],[214,14,52],[236,12,28],[256,13,36],[271,16,18]];
+const TOP0=100,TOPMAX=290,FOOT=360;
+function paintColor(){const c=WAX[S.color],sv=$('#cv');['--w0','--w1','--w2','--w3','--w4','--w5'].forEach((v,i)=>sv.style.setProperty(v,c[i]));
+  document.querySelectorAll('.sw').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===S.color));
+  sv.setAttribute('aria-label','A '+S.color+' pillar candle on an antique gold stand')}
+function drawCandle(p){
+  const t=TOP0+p*(TOPMAX-TOP0),c=WAX[S.color];
+  $('#body').setAttribute('y',t);$('#body').setAttribute('height',FOOT-t);
+  let o=`<path d="M147 ${t}A63 16 0 0 0 273 ${t}L273 ${t+12}A63 16 0 0 1 147 ${t+12}Z" fill="url(#lipG)"/>`;
+  DR.forEach(([x,w,l])=>{const y0=t+16*Math.sqrt(Math.max(0,1-((x-210)/63)**2))+9,L=Math.min(FOOT-y0-6,l*(.75+p*.9));
+    o+=`<rect x="${f(x-w/2)}" y="${t+4}" width="${w}" height="${f(y0-t-4+L)}" rx="${w/2}" style="fill:var(--w5)"/><circle cx="${x}" cy="${f(y0+L)}" r="${f(w*.6)}" style="fill:var(--w5)"/>
+    <path d="M${f(x-w*.18)} ${f(y0)}V${f(y0+L-1)}" stroke="#fff" stroke-opacity=".5" stroke-width="${f(w*.2)}" stroke-linecap="round"/>
+    <path d="M${f(x+w*.4)} ${f(y0+2)}V${f(y0+L)}" stroke="#000" stroke-opacity=".07" stroke-width="${f(w*.2)}" stroke-linecap="round"/>`});
+  o+=`<ellipse cx="210" cy="${t}" rx="63" ry="16" style="fill:var(--w3)"/>
+  <ellipse cx="210" cy="${t-1}" rx="59" ry="13.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+  <ellipse cx="210" cy="${t+1}" rx="47" ry="11" style="fill:var(--w1)" opacity=".75"/>
+  <ellipse cx="210" cy="${t+3}" rx="45" ry="9.5" fill="url(#poolG)"/>
+  <ellipse cx="211" cy="${t+4}" rx="7" ry="2.2" fill="#000" opacity=".1"/>
+  <path d="M210 ${t+4}q-2.4 -8 1 -17" stroke="#4a3226" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+  <path d="M210.6 ${t-9}q.6 -2.4 .4 -4" stroke="#1e130e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+  <circle id="ember" cx="211" cy="${t-12}" r="1.8" fill="#ff7a3a" opacity="${S.running?1:0}"/>`;
+  $('#ctop').innerHTML=o;
+  $('#flamePos').setAttribute('transform','translate(211 '+(t-12)+')');
+  $('#smokeWrap').setAttribute('transform','translate(0 '+(t-TOP0)+')');
+  $('#glow').setAttribute('cy',t-40);
+  const sv=$('#cv'),st=$('#stage');
+  if(sv.getBoundingClientRect().height){const sr=sv.getBoundingClientRect(),stR=st.getBoundingClientRect();
+    $('#warm').style.setProperty('--fy',f((sr.top-stR.top+(t-40)/450*sr.height)/stR.height*100)+'%')}
+}
+function lit(on){$('#stage').classList.toggle('lit',on);$('#flamePos').setAttribute('opacity',on?1:0);$('#glow').setAttribute('opacity',on?1:0);const e=$('#ember');if(e)e.setAttribute('opacity',on?1:0)}
+function puff(){const s=$('#smoke');s.classList.remove('go');void s.getBBox();s.classList.add('go')}
+
+/* ================= timer ================= */
+const elapsed=()=>S.before+(S.running?Date.now()-S.startedAt:0);
+const total=()=>(S.dur||OPEN_BURN)*60000;
+const prog=()=>Math.min(1,elapsed()/total());
+const fmt=ms=>{const s=Math.max(0,Math.round(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+let wake=null;
+async function holdAwake(on){try{if(on&&!wake&&navigator.wakeLock){wake=await navigator.wakeLock.request('screen')}else if(!on&&wake){await wake.release();wake=null}}catch(e){wake=null}}
+function render(){
+  const el=elapsed(),started=el>0,durLabel=S.dur?DURS.find(d=>d[0]===S.dur)[1]:'open-ended';
+  $('#clock').textContent=S.dur?fmt(total()-el):fmt(el);
+  $('#state').innerHTML=S.running?'<b>burning</b> · '+durLabel:started?'paused · '+durLabel:'ready · '+durLabel;
+  $('#metaDur').textContent=durLabel;
+  $('#withBook').textContent=S.book||'a good book';
+  $('#go').textContent=S.running?'pause':started?'relight':'light the candle';
+  $('#fin').disabled=!started;$('#reset').disabled=!started||S.running;
+  document.querySelectorAll('#durs .chip').forEach(b=>{b.setAttribute('aria-pressed',+b.dataset.d===S.dur);b.disabled=started});
+  drawCandle(prog());
+  document.title=S.running?$('#clock').textContent+' · reading candle':'reading candle';
+}
+let iv=null;
+function loop(on){clearInterval(iv);iv=on?setInterval(()=>{if(S.dur&&elapsed()>=total()){burnout();return}render()},250):null}
+function light(){if(S.dur&&elapsed()>=total())return;S.running=true;S.startedAt=Date.now();save();render();lit(true);loop(true);holdAwake(true)}
+function pause(){S.before=elapsed();S.running=false;save();render();lit(false);puff();loop(false);holdAwake(false)}
+function burnout(){S.before=total();S.running=false;save();render();lit(false);puff();loop(false);holdAwake(false);chime();askLog()}
+function finish(){if(S.running)pause();askLog()}
+function resetTimer(){S.before=0;S.running=false;S.startedAt=0;save();$('#logrow').hidden=true;render()}
+function askLog(){const m=Math.max(1,Math.round(elapsed()/60000));
+  $('#logmsg').innerHTML='You read for <b>'+m+' min</b> with <em>'+esc(S.book||'a good book')+'</em>. How many pages?';
+  $('#logrow').hidden=false;$('#pages').value='';$('#pages').focus()}
+function chime(){try{const a=ac(),t=a.currentTime;
+  [[880,0],[1318.5,.18]].forEach(([fr,d])=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=fr;g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(.18,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+2.4);o.connect(g).connect(a.destination);o.start(t+d);o.stop(t+d+2.5)})}catch(e){}}
+$('#go').onclick=()=>S.running?pause():light();
+$('#fin').onclick=finish;$('#reset').onclick=resetTimer;
+/* ---- Notion sync: works when served from the reading-shelf site; otherwise stays on this device ---- */
+const KEY=new URLSearchParams(location.search).get('key')||'';
+let live=false,liveBooks=[];
+const api=o=>fetch('/api/sessions'+(KEY?'?key='+encodeURIComponent(KEY):''),o);
+const iso=d=>{const z=-d.getTimezoneOffset(),p=n=>String(Math.floor(Math.abs(n))).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+(z>=0?'+':'-')+p(z/60)+':'+p(z%60)};
+const note=t=>{$('#note').textContent=t};
+async function pull(){try{const r=await api({cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();if(!Array.isArray(j.sessions))throw 0;
+  live=true;sessions=j.sessions;liveBooks=j.reading||[];
+  if(liveBooks.length){$('#shelfBooks').innerHTML=liveBooks.map(b=>'<option value="'+esc(b.t)+'">').join('');
+    if(!liveBooks.some(b=>b.t.toLowerCase()===(S.book||'').toLowerCase())){S.book=liveBooks[0].t;$('#book').value=S.book;save();render()}}
+  log()}catch(e){}}
+$('#save').onclick=async()=>{const ms=elapsed(),m=Math.max(1,Math.round(ms/60000)),pg=+$('#pages').value||0,book=S.book||'Untitled';
+  if(live){const end=new Date(),start=new Date(end-ms),b=liveBooks.find(x=>x.t.toLowerCase()===book.toLowerCase());
+    $('#save').disabled=true;$('#save').textContent='saving…';
+    try{const r=await api({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book,bookId:b&&b.id,start:iso(start),end:iso(end),pages:pg})});
+      const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('error '+r.status));
+      sessions.push({d:dayKey(),b:book,m,p:pg});resetTimer();log();note(j.linkedBook?'Saved to your Notion reading tracker.':'Saved to Notion. No book in your shelf matched "'+book+'", so it isn\'t linked to one.');pull()}
+    catch(e){note("Couldn't save to Notion: "+e.message+". Your sitting is still here, try log it again.")}
+    finally{$('#save').disabled=false;$('#save').textContent='log it'}
+    return}
+  if(sessions===null)sessions=[];
+  sessions.push({d:dayKey(),b:book,m,p:pg});store.set('nook-sessions',sessions);resetTimer();log()};
+$('#skip').onclick=resetTimer;
+$('#book').value=S.book;
+$('#book').addEventListener('input',e=>{S.book=e.target.value.trim();save();render()});
+DURS.forEach(([d,l])=>{const b=document.createElement('button');b.className='chip';b.dataset.d=d;b.textContent=l;b.onclick=()=>{S.dur=d;save();render()};$('#durs').append(b)});
+
+/* ================= soundscape (synthesised live with Web Audio) ================= */
+let AC=null,master=null,WHITE=null,BROWN=null;
+function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=vol()*vol();master.connect(AC.destination);
+  const n=AC.sampleRate*4;WHITE=AC.createBuffer(1,n,AC.sampleRate);BROWN=AC.createBuffer(1,n,AC.sampleRate);const w=WHITE.getChannelData(0),b=BROWN.getChannelData(0);let last=0;
+  for(let i=0;i<n;i++){w[i]=Math.random()*2-1;last=(last+.02*w[i])/1.02;b[i]=last*3.5}}
+  if(AC.state==='suspended')AC.resume();return AC}
+const vol=()=>+$('#vol').value/100;
+function loopSrc(buf){const s=AC.createBufferSource();s.buffer=buf;s.loop=true;s.start(0,Math.random()*3);return s}
+function filt(type,fr,q){const x=AC.createBiquadFilter();x.type=type;x.frequency.value=fr;if(q)x.Q.value=q;return x}
+function gain(v){const g=AC.createGain();g.gain.value=v;return g}
+function chain(...n){for(let i=0;i<n.length-1;i++)n[i].connect(n[i+1]);return n[n.length-1]}
+function burst(out,{f1,f2,type='bandpass',q=1,amp,dec}){const s=AC.createBufferSource();s.buffer=WHITE;const x=filt(type,f1+Math.random()*(f2-f1),q),g=gain(0),t=AC.currentTime;
+  g.gain.setValueAtTime(amp,t);g.gain.exponentialRampToValueAtTime(.0001,t+dec);chain(s,x,g,out);s.start(t,Math.random()*3);s.stop(t+dec+.05)}
+const SOUNDS={
+  rain:{label:'Rain',icon:'<path d="M7 15a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.5 1.5A3.5 3.5 0 0 1 17.5 15z"/><path d="M8 18l-1 2.5M12 18l-1 2.5M16 18l-1 2.5"/>',
+    make(out){const srcs=[loopSrc(WHITE),loopSrc(BROWN)];chain(srcs[0],filt('highpass',700),filt('lowpass',7500),gain(.2),out);chain(srcs[1],filt('lowpass',900),gain(.32),out);
+      return{srcs,timers:[setInterval(()=>{if(Math.random()<.45)burst(out,{f1:2200,f2:6500,q:2.5,amp:.05+Math.random()*.12,dec:.03+Math.random()*.04})},55)]}}},
+  fire:{label:'Fireplace',icon:'<path d="M12 21c-3.5 0-6-2.3-6-5.6 0-3.4 3-5.4 3.6-9.4 2 1.4 3 3.2 3 4.8 1-.6 1.6-1.8 1.8-3 2 1.8 3.6 4.4 3.6 7.6 0 3.3-2.5 5.6-6 5.6z"/><path d="M12 21c-1.5 0-2.6-1-2.6-2.5 0-1.6 1.4-2.5 2.6-4.2 1.2 1.7 2.6 2.6 2.6 4.2 0 1.5-1.1 2.5-2.6 2.5z"/>',
+    make(out){const srcs=[loopSrc(BROWN),loopSrc(WHITE)];chain(srcs[0],filt('lowpass',420),gain(.6),out);chain(srcs[1],filt('bandpass',2600,.6),gain(.012),out);
+      return{srcs,timers:[setInterval(()=>{if(Math.random()<.2){const big=Math.random()<.25;burst(out,{type:'highpass',f1:900,f2:2500,amp:big?.5:.12+Math.random()*.18,dec:big?.08:.015+Math.random()*.03});if(big&&Math.random()<.6)setTimeout(()=>burst(out,{type:'highpass',f1:1500,f2:3000,amp:.15,dec:.02}),40+Math.random()*80)}},60)]}}},
+  cafe:{label:'Café',icon:'<path d="M5 10h11v4.5A4.5 4.5 0 0 1 11.5 19h-2A4.5 4.5 0 0 1 5 14.5z"/><path d="M16 11.5h1.5a2 2 0 0 1 0 4H16"/><path d="M8.5 3.5c-.6.9.6 1.6 0 2.6M12 3.5c-.6.9.6 1.6 0 2.6"/>',
+    make(out){const srcs=[loopSrc(WHITE),loopSrc(WHITE)],g1=gain(.12),g2=gain(.06);chain(srcs[0],filt('bandpass',480,1.4),g1,out);chain(srcs[1],filt('bandpass',1150,2),g2,out);
+      const sway=setInterval(()=>{const t=AC.currentTime;g1.gain.linearRampToValueAtTime(.06+Math.random()*.16,t+.35);g2.gain.linearRampToValueAtTime(.02+Math.random()*.08,t+.3)},380);
+      const clink=setInterval(()=>{if(Math.random()<.22){const t=AC.currentTime,fr=2800+Math.random()*1600;[1,1.51].forEach((m,i)=>{const o=AC.createOscillator(),g=gain(0);o.frequency.value=fr*m;g.gain.setValueAtTime(i?.02:.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+.5);chain(o,g,out);o.start(t);o.stop(t+.55)})}},900);
+      return{srcs,timers:[sway,clink]}}},
+  wind:{label:'Wind',icon:'<path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h7"/>',
+    make(out){const srcs=[loopSrc(WHITE)],bp=filt('bandpass',450,3.5),g=gain(.3);chain(srcs[0],bp,g,out);
+      const sweep=()=>{const t=AC.currentTime;bp.frequency.linearRampToValueAtTime(220+Math.random()*700,t+2.8);g.gain.linearRampToValueAtTime(.15+Math.random()*.4,t+2.8)};sweep();
+      return{srcs,timers:[setInterval(sweep,2900)]}}},
+  ocean:{label:'Ocean',icon:'<path d="M2 9c2 0 2-1.5 4-1.5S8 9 10 9s2-1.5 4-1.5S16 9 18 9s2-1.5 4-1.5"/><path d="M2 13c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M2 17c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/>',
+    make(out){const srcs=[loopSrc(BROWN),loopSrc(WHITE)],g=gain(.1),g2=gain(.01);chain(srcs[0],filt('lowpass',650),g,out);chain(srcs[1],filt('lowpass',2400),g2,out);
+      const wave=()=>{const t=AC.currentTime,pk=.5+Math.random()*.35,up=2.6+Math.random()*1.2;g.gain.linearRampToValueAtTime(pk,t+up);g.gain.linearRampToValueAtTime(.08,t+up+3.8);g2.gain.linearRampToValueAtTime(.09,t+up+.3);g2.gain.linearRampToValueAtTime(.008,t+up+3.5)};wave();
+      return{srcs,timers:[setInterval(wave,7200)]}}}
+};
+const PRESETS=[['Rainy library',['rain','fire']],['Seaside cottage',['ocean','wind']],['Corner café',['cafe','rain']],['Silence',[]]];
+const on={};
+function startSound(k){ac();const out=gain(0);out.connect(master);const h=SOUNDS[k].make(out);out.gain.linearRampToValueAtTime(1,AC.currentTime+1.5);on[k]={out,...h}}
+function stopSound(k){const h=on[k];if(!h)return;delete on[k];const t=AC.currentTime;h.out.gain.cancelScheduledValues(t);h.out.gain.setValueAtTime(h.out.gain.value,t);h.out.gain.linearRampToValueAtTime(0,t+.8);
+  h.timers.forEach(clearInterval);setTimeout(()=>{h.srcs.forEach(s=>{try{s.stop()}catch(e){}});h.out.disconnect()},900)}
+function paintSound(){document.querySelectorAll('.tile').forEach(b=>b.setAttribute('aria-pressed',!!on[b.dataset.k]));
+  const act=Object.keys(on).sort().join();document.querySelectorAll('#presets .chip').forEach(b=>b.setAttribute('aria-pressed',[...b.dataset.k.split(',')].filter(Boolean).sort().join()===act))}
+Object.entries(SOUNDS).forEach(([k,v])=>{const b=document.createElement('button');b.className='tile';b.dataset.k=k;b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+v.icon+'</svg>'+v.label;
+  b.onclick=()=>{on[k]?stopSound(k):startSound(k);paintSound()};$('#tiles').append(b)});
+PRESETS.forEach(([l,ks])=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.dataset.k=ks.join();
+  b.onclick=()=>{Object.keys(on).forEach(k=>{if(!ks.includes(k))stopSound(k)});ks.forEach(k=>{if(!on[k])startSound(k)});paintSound()};$('#presets').append(b)});
+$('#vol').value=store.get('nook-vol',70);$('#volv').textContent=$('#vol').value+'%';
+$('#vol').addEventListener('input',()=>{$('#volv').textContent=$('#vol').value+'%';store.set('nook-vol',+$('#vol').value);if(master)master.gain.setTargetAtTime(vol()*vol(),AC.currentTime,.05)});
+paintSound();
+
+/* ================= log ================= */
+function log(){
+  const list=all(),today=dayKey(),t=list.filter(s=>s.d===today);
+  $('#sToday').textContent=t.reduce((a,s)=>a+s.m,0);
+  $('#sPages').textContent=t.reduce((a,s)=>a+(s.p||0),0);
+  const wk=new Set([...Array(7)].map((_,i)=>daysAgo(i)));
+  $('#sWeek').textContent=list.filter(s=>wk.has(s.d)).length;
+  const days=new Set(list.map(s=>s.d));let st=0,i=days.has(today)?0:1;while(days.has(daysAgo(i))){st++;i++}
+  $('#sStreak').textContent=st;
+  const per=[...Array(7)].map((_,i)=>{const k=daysAgo(6-i);return{k,m:list.filter(s=>s.d===k).reduce((a,s)=>a+s.m,0)}}),mx=Math.max(30,...per.map(x=>x.m));
+  $('#week').innerHTML=per.map((x,i)=>'<div class="bar'+(i===6?' today':'')+'" title="'+x.m+' min"><small>'+(x.m||'')+'</small><i style="height:'+Math.round(x.m/mx*58)+'px"></i>'+new Date(x.k+'T00:00').toLocaleDateString(undefined,{weekday:'narrow'})+'</div>').join('');
+  const recent=[...list].map((s,i)=>[s,i]).sort((a,b)=>b[0].d.localeCompare(a[0].d)||b[1]-a[1]).map(x=>x[0]).slice(0,5);
+  $('#list').innerHTML=recent.length?recent.map(s=>{const when=s.d===today?'today':s.d===daysAgo(1)?'yesterday':new Date(s.d+'T00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return '<div><em>'+esc(s.b)+'</em><span>'+s.m+' min'+(s.p?' · '+s.p+' pp':'')+' · '+when+'</span></div>'}).join(''):'<div class="empty">Light the candle to log your first sitting.</div>';
+  $('#foot').innerHTML=sessions===null?'<span class="tag">example sittings</span><button class="link" id="clr">clear examples</button>':(live?'<span>Synced with your Notion reading tracker.</span>':'<span>Small sittings count.</span>');
+  const c=$('#clr');if(c)c.onclick=()=>{sessions=[];store.set('nook-sessions',sessions);log()};
+}
+
+/* ================= boot ================= */
+paintColor();
+if(S.running){if(S.dur&&elapsed()>=total()){S.before=total();S.running=false;save()}else{loop(true)}}
+render();lit(S.running);log();pull();
+if(!S.running&&elapsed()>0&&elapsed()>=total())askLog();
+addEventListener('resize',()=>drawCandle(prog()));
+</script>
