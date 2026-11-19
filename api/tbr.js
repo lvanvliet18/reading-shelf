@@ -32,7 +32,7 @@ async function sourceId(id) {
   } catch (e) { /* already a data source ID */ }
   return (sources[id] = clean);
 }
-async function query(dbId, body, max = 400) {
+async function query(dbId, body, max = 2000) {
   const ds = await sourceId(dbId);
   let out = [], cursor;
   do {
