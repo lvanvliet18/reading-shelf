@@ -30,6 +30,7 @@ h1 em{font-style:italic;color:var(--pink);font-weight:600}
 .stage{position:relative;flex:1;min-height:330px;display:flex;align-items:flex-end;justify-content:center;margin-top:4px}
 #jar{width:min(100%,300px);height:auto;overflow:visible}
 #jarbody{transform-box:view-box;transform-origin:150px 380px}
+#jar{filter:drop-shadow(0 1px 0 rgba(255,255,255,.6))}
 .shaking #jarbody{animation:shake .9s cubic-bezier(.36,.07,.19,.97)}
 @keyframes shake{10%,90%{transform:rotate(-2deg)}20%,80%{transform:rotate(4deg)}30%,50%,70%{transform:rotate(-7deg)}40%,60%{transform:rotate(7deg)}}
 .slip{transition:transform .6s cubic-bezier(.2,.9,.3,1.2)}
@@ -93,56 +94,70 @@ background:repeating-linear-gradient(#fff 0 25px,#f6dbe5 25px 26px);box-shadow:0
   <h1>shake the <em>jar</em></h1>
   <div class="meta" id="meta">loading your slips…</div>
   <div class="stage" id="stage">
-    <svg id="jar" viewBox="0 0 300 400" role="img" aria-label="A glass apothecary jar of paper slips tied with a pink satin bow">
+    <svg id="jar" viewBox="0 0 300 400" role="img" aria-label="A glass apothecary jar of paper slips with a pink bow tied on the lid">
       <defs>
-        <linearGradient id="glass" x1="0" x2="1"><stop offset="0" stop-color="#eef3f2" stop-opacity=".75"/><stop offset=".12" stop-color="#fff" stop-opacity=".25"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset=".85" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#dfe8e6" stop-opacity=".8"/></linearGradient>
-        <linearGradient id="rim" x1="0" x2="1"><stop offset="0" stop-color="#d9e2e0"/><stop offset=".3" stop-color="#fff"/><stop offset=".7" stop-color="#f3f7f6"/><stop offset="1" stop-color="#cfd9d6"/></linearGradient>
-        <linearGradient id="satin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7b9cf"/><stop offset=".35" stop-color="#fde2ec"/><stop offset=".6" stop-color="#f29bbb"/><stop offset="1" stop-color="#e7799f"/></linearGradient>
-        <linearGradient id="satinH" x1="0" x2="1"><stop offset="0" stop-color="#e7799f"/><stop offset=".4" stop-color="#fbd3e1"/><stop offset=".7" stop-color="#f29bbb"/><stop offset="1" stop-color="#e06d96"/></linearGradient>
-        <radialGradient id="doily"><stop offset="0" stop-color="#fff"/><stop offset=".8" stop-color="#fff6fa"/><stop offset="1" stop-color="#fde6ef"/></radialGradient>
-        <clipPath id="inside"><path d="M66 150 Q60 152 58 170 L56 352 Q56 372 80 374 L220 374 Q244 372 244 352 L242 170 Q240 152 234 150Z"/></clipPath>
-        <filter id="soft"><feGaussianBlur stdDeviation="5"/></filter>
+        <linearGradient id="gWall" x1="0" x2="1">
+          <stop offset="0" stop-color="#9fb7b2" stop-opacity=".55"/><stop offset=".045" stop-color="#e9f2f0" stop-opacity=".35"/>
+          <stop offset=".12" stop-color="#fff" stop-opacity=".05"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+          <stop offset=".86" stop-color="#fff" stop-opacity=".04"/><stop offset=".955" stop-color="#e3eeec" stop-opacity=".3"/>
+          <stop offset="1" stop-color="#8fa9a4" stop-opacity=".6"/></linearGradient>
+        <linearGradient id="gBack" x1="0" x2="1"><stop offset="0" stop-color="#dfe9e7" stop-opacity=".35"/><stop offset=".15" stop-color="#f4f8f7" stop-opacity=".06"/><stop offset=".85" stop-color="#f4f8f7" stop-opacity=".06"/><stop offset="1" stop-color="#d6e2df" stop-opacity=".35"/></linearGradient>
+        <linearGradient id="gLid" x1="0" x2="1"><stop offset="0" stop-color="#a9bfba" stop-opacity=".7"/><stop offset=".18" stop-color="#f6faf9" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity=".2"/><stop offset=".82" stop-color="#eef4f3" stop-opacity=".4"/><stop offset="1" stop-color="#9db3ae" stop-opacity=".7"/></linearGradient>
+        <radialGradient id="gKnob" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".35" stop-color="#eef5f3" stop-opacity=".55"/><stop offset=".8" stop-color="#c3d4d0" stop-opacity=".55"/><stop offset="1" stop-color="#8fa9a4" stop-opacity=".8"/></radialGradient>
+        <radialGradient id="gBase" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".7" stop-color="#dfeae8" stop-opacity=".45"/><stop offset="1" stop-color="#9fb7b2" stop-opacity=".7"/></radialGradient>
+        <linearGradient id="satin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7b9cf"/><stop offset=".35" stop-color="#fde2ec"/><stop offset=".65" stop-color="#f29bbb"/><stop offset="1" stop-color="#e7799f"/></linearGradient>
+        <linearGradient id="satinH" x1="0" x2="1"><stop offset="0" stop-color="#e7799f"/><stop offset=".45" stop-color="#fbd3e1"/><stop offset=".75" stop-color="#f29bbb"/><stop offset="1" stop-color="#e06d96"/></linearGradient>
+        <clipPath id="inside"><path d="M90 134 Q68 140 66 168 L66 356 Q66 372 150 373 Q234 372 234 356 L234 168 Q232 140 210 134Z"/></clipPath>
+        <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+        <filter id="sheen"><feGaussianBlur stdDeviation="1.1"/></filter>
       </defs>
-      <!-- lace doily coaster -->
-      <ellipse cx="150" cy="384" rx="128" ry="16" fill="rgba(170,70,100,.12)" filter="url(#soft)"/>
-      <g id="lace"></g>
+      <!-- soft contact shadow only -->
+      <ellipse cx="150" cy="384" rx="96" ry="8" fill="rgba(60,40,50,.16)" filter="url(#soft)"/>
+      <ellipse cx="150" cy="381" rx="82" ry="4" fill="rgba(60,40,50,.12)" filter="url(#sheen)"/>
       <g id="jarbody">
-        <!-- slips sit inside the glass -->
+        <!-- back wall of the glass, seen through the front -->
+        <path d="M86 124 L86 130 Q62 136 60 164 L60 362 Q60 380 150 380 Q240 380 240 362 L240 164 Q238 136 214 130 L214 124Z" fill="url(#gBack)"/>
+        <ellipse cx="150" cy="124" rx="64" ry="7" fill="none" stroke="#b9ccc8" stroke-opacity=".6" stroke-width="1.2"/>
+        <!-- slips inside -->
         <g clip-path="url(#inside)"><g id="slips"></g></g>
-        <!-- glass body -->
-        <path d="M78 120 L78 138 Q58 142 56 168 L54 352 Q54 378 82 380 L218 380 Q246 378 246 352 L244 168 Q242 142 222 138 L222 120Z" fill="url(#glass)" stroke="#c9d6d3" stroke-width="2"/>
-        <path d="M70 176 Q68 260 72 340" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75" fill="none"/>
-        <path d="M84 168 Q82 200 83 222" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6" fill="none"/>
-        <path d="M232 190 Q235 270 230 342" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".4" fill="none"/>
-        <!-- neck + lid -->
-        <rect x="74" y="112" width="152" height="14" rx="5" fill="url(#rim)" stroke="#c9d6d3" stroke-width="1.5"/>
-        <path d="M68 112 Q70 84 150 80 Q230 84 232 112Z" fill="url(#glass)" stroke="#c9d6d3" stroke-width="2"/>
-        <path d="M86 104 Q100 90 140 88" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8" fill="none"/>
-        <rect x="138" y="62" width="24" height="20" rx="5" fill="url(#rim)" stroke="#c9d6d3" stroke-width="1.5"/>
-        <circle cx="150" cy="48" r="17" fill="url(#glass)" stroke="#c9d6d3" stroke-width="2"/>
-        <circle cx="144" cy="42" r="5" fill="#fff" opacity=".8"/>
-        <!-- satin ribbon band + bow -->
-        <path d="M55 232 Q150 246 245 232 L245 252 Q150 266 55 252Z" fill="url(#satin)"/>
-        <path d="M55 236 Q150 250 245 236" stroke="#fff" stroke-opacity=".6" stroke-width="1.4" fill="none"/>
-        <g transform="translate(150 249)">
-          <path d="M-4 4 Q-20 40 -34 62 L-24 58 L-20 70 Q-8 40 4 8Z" fill="url(#satinH)"/>
-          <path d="M4 4 Q22 36 40 56 L30 54 L28 66 Q12 38 -2 8Z" fill="url(#satinH)"/>
-          <path d="M-2 0 Q-38 -30 -52 -8 Q-56 10 -2 6Z" fill="url(#satin)" stroke="#e06d96" stroke-width="1"/>
-          <path d="M2 0 Q38 -30 52 -8 Q56 10 2 6Z" fill="url(#satin)" stroke="#e06d96" stroke-width="1"/>
-          <path d="M-8 -2 Q-30 -18 -40 -6" stroke="#fff" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <path d="M8 -2 Q30 -18 40 -6" stroke="#c95a83" stroke-opacity=".5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-          <rect x="-9" y="-6" width="18" height="16" rx="6" fill="#ec8aae" stroke="#e06d96"/>
-        </g>
-        <!-- hanging tag -->
-        <path d="M176 262 Q186 278 190 286" stroke="#d9a3b6" stroke-width="1.5" fill="none"/>
-        <g transform="translate(168 284) rotate(-12)">
-          <path d="M0 8 L10 0 L62 0 L62 34 L10 34 L0 26Z" fill="#fffaf5" stroke="#e8c9d3" stroke-width="1.5"/>
-          <circle cx="9" cy="17" r="2.6" fill="#fff" stroke="#d9a3b6"/>
-          <text x="38" y="23" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="16" font-weight="700" fill="#e24c85">TBR</text>
+        <!-- thick glass base -->
+        <path d="M62 352 Q62 368 150 369 Q238 368 238 352 L238 362 Q238 380 150 380 Q62 380 62 362Z" fill="url(#gBase)"/>
+        <path d="M74 368 Q150 376 226 368" stroke="#fff" stroke-opacity=".85" stroke-width="1.6" fill="none" filter="url(#sheen)"/>
+        <!-- front wall -->
+        <path d="M86 124 L86 130 Q62 136 60 164 L60 362 Q60 380 150 380 Q240 380 240 362 L240 164 Q238 136 214 130 L214 124Z" fill="url(#gWall)" stroke="#8fa9a4" stroke-opacity=".75" stroke-width="1.4"/>
+        <path d="M66 170 L66 356" stroke="#7f9c96" stroke-opacity=".35" stroke-width="1"/><path d="M234 170 L234 356" stroke="#7f9c96" stroke-opacity=".35" stroke-width="1"/>
+        <!-- shoulder and wall reflections -->
+        <path d="M70 172 Q66 260 70 346" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".75" fill="none" filter="url(#sheen)"/>
+        <path d="M82 178 Q80 230 82 300" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".55" fill="none"/>
+        <path d="M229 180 Q233 260 229 340" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45" fill="none" filter="url(#sheen)"/>
+        <path d="M70 156 Q76 140 96 135" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".8" fill="none" filter="url(#sheen)"/>
+        <path d="M204 135 Q222 139 230 154" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5" fill="none"/>
+        <!-- neck lip -->
+        <path d="M84 124 Q84 116 150 115 Q216 116 216 124 Q216 132 150 133 Q84 132 84 124Z" fill="url(#gLid)" stroke="#8fa9a4" stroke-opacity=".7" stroke-width="1.2"/>
+        <path d="M92 127 Q150 134 208 127" stroke="#fff" stroke-opacity=".8" stroke-width="1.4" fill="none"/>
+        <!-- glass lid: flange, dome, knob -->
+        <path d="M76 116 Q76 106 150 104 Q224 106 224 116 Q224 124 150 125 Q76 124 76 116Z" fill="url(#gLid)" stroke="#8fa9a4" stroke-opacity=".75" stroke-width="1.2"/>
+        <path d="M84 118 Q150 126 216 118" stroke="#fff" stroke-opacity=".85" stroke-width="1.6" fill="none"/>
+        <path d="M84 110 Q88 80 150 76 Q212 80 216 110 Q150 104 84 110Z" fill="url(#gLid)" stroke="#8fa9a4" stroke-opacity=".7" stroke-width="1.2"/>
+        <path d="M96 102 Q104 86 134 81" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".85" fill="none" filter="url(#sheen)"/>
+        <path d="M141 77 Q140 66 143 60 L157 60 Q160 66 159 77Z" fill="url(#gLid)" stroke="#8fa9a4" stroke-opacity=".7" stroke-width="1.1"/>
+        <circle cx="150" cy="45" r="16" fill="url(#gKnob)" stroke="#8fa9a4" stroke-opacity=".7" stroke-width="1.1"/>
+        <ellipse cx="144" cy="39" rx="5" ry="3.5" fill="#fff" opacity=".9" transform="rotate(-30 144 39)"/>
+        <!-- satin bow tied round the knob's neck -->
+        <g transform="translate(150 66)">
+          <path d="M-3 3 Q-12 22 -20 34 L-13 32 L-11 40 Q-3 22 3 6Z" fill="url(#satinH)"/>
+          <path d="M3 3 Q13 20 22 31 L15 30 L14 38 Q6 21 -2 6Z" fill="url(#satinH)"/>
+          <path d="M-9 -3 Q-10 3 9 -3 Q10 3 -9 -3" fill="none"/>
+          <path d="M-12 -4 L12 -4 L12 4 L-12 4Z" fill="url(#satin)" rx="2"/>
+          <path d="M-2 0 Q-30 -22 -38 -6 Q-40 8 -2 4Z" fill="url(#satin)" stroke="#e06d96" stroke-width=".9"/>
+          <path d="M2 0 Q30 -22 38 -6 Q40 8 2 4Z" fill="url(#satin)" stroke="#e06d96" stroke-width=".9"/>
+          <path d="M-7 -1 Q-24 -13 -31 -5" stroke="#fff" stroke-opacity=".75" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M7 -1 Q22 -12 30 -5" stroke="#c95a83" stroke-opacity=".45" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <rect x="-6" y="-5" width="12" height="11" rx="4" fill="#ec8aae" stroke="#e06d96" stroke-width=".9"/>
         </g>
       </g>
       <!-- the slip that flies out on a shake -->
-      <g id="flyer" transform="translate(130 120)"><rect width="46" height="22" rx="2" fill="#f9d3de" stroke="#e8a9bf"/><path d="M8 8h28M8 14h22" stroke="#e8a9bf"/></g>
+      <g id="flyer" transform="translate(128 112)"><rect width="46" height="22" rx="2" fill="#f9d3de" stroke="#e8a9bf"/><path d="M8 8h28M8 14h22" stroke="#e8a9bf"/></g>
     </svg>
   </div>
   <div class="count" id="count"></div>
@@ -232,18 +247,22 @@ function filters(){
 
 /* ---------- the jar ---------- */
 const BOOKC=['#f9d3de','#f7c6d3','#fbe4ea','#f4b6c8','#fde8ef','#f1a7bd'],FICC=['#cfe6d8','#b9d6c6','#e3efe8','#a7cbb6','#d9ece1'];
-function lace(){let s='';for(let i=0;i<36;i++){const a=i/36*Math.PI*2,x=150+Math.cos(a)*120,y=384+Math.sin(a)*15;s+='<circle cx="'+f(x)+'" cy="'+f(y)+'" r="8" fill="#fff" stroke="#f6c9d8"/>'}
-  $('#lace').innerHTML=s+'<ellipse cx="150" cy="384" rx="118" ry="14" fill="url(#doily)" stroke="#f6c9d8"/><ellipse cx="150" cy="384" rx="100" ry="11" fill="none" stroke="#f9d7e3" stroke-dasharray="2 4"/>'}
 function jar(reshuffle){
   /* the jar shows up to 30 books and 30 fics so both colours show; draws still use every slip */
   const mix=k=>slips.filter(s=>s.k===k).map(s=>[hash(s.id),s]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]).slice(0,30);
-  const all=[...mix('book'),...mix('fic')].map(s=>[hash(s.id+'j'),s]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+  let all=[...mix('book'),...mix('fic')].map(s=>[hash(s.id+'j'),s]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+  if(!live&&all.length)all=[...Array(42)].map((_,i)=>[hash(i*7919+'x'),all[i%all.length]]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]); /* example slips: fill the jar so it looks like yours will */
   const r=rng(reshuffle?Date.now():hash(all.map(s=>s.id).join())),n=all.length;
   const rowsN=Math.max(1,Math.ceil(n/7));let html='';
   all.forEach((s,i)=>{
     const row=Math.floor(i/7),col=i%7,fic=s.k==='fic',pal=fic?FICC:BOOKC;
-    const x=74+col*24+r()*14,y=360-row*Math.min(22,170/rowsN)-r()*10,rot=(r()-.5)*70,c=pal[Math.floor(r()*pal.length)];
-    html+='<g class="slip'+(matches(s)?'':' dim')+'" transform="translate('+f(x)+' '+f(y)+') rotate('+f(rot)+')"><rect x="-23" y="-10" width="46" height="20" rx="2" fill="'+c+'" stroke="'+(fic?'#8fc1a5':'#e8a9bf')+'" stroke-width=".8"/><path d="M-15 -3h28M-15 3h20" stroke="'+(fic?'#8fc1a5':'#e8a9bf')+'" stroke-width=".8"/></g>'});
+    const x=82+col*22+r()*12,y=358-row*Math.min(22,170/rowsN)-r()*10,rot=(r()-.5)*70,c=pal[Math.floor(r()*pal.length)];
+    const w=36+r()*16,h=16+r()*7,ln=fic?'#8fc1a5':'#e8a9bf',fold=r()<.35;
+    html+='<g class="slip'+(matches(s)?'':' dim')+'" transform="translate('+f(x)+' '+f(y)+') rotate('+f(rot)+')">'+
+      '<rect x="'+f(-w/2+1.5)+'" y="'+f(-h/2+2)+'" width="'+f(w)+'" height="'+f(h)+'" rx="2" fill="rgba(90,60,70,.12)"/>'+
+      '<rect x="'+f(-w/2)+'" y="'+f(-h/2)+'" width="'+f(w)+'" height="'+f(h)+'" rx="2" fill="'+c+'" stroke="'+ln+'" stroke-width=".8"/>'+
+      (fold?'<path d="M'+f(w/2-9)+' '+f(-h/2)+' L'+f(w/2)+' '+f(-h/2+7)+' L'+f(w/2-9)+' '+f(-h/2+7)+'Z" fill="#fff" opacity=".55"/>':'')+
+      '<path d="M'+f(-w/2+7)+' -2.5h'+f(w-16)+'M'+f(-w/2+7)+' 3h'+f(w*.55)+'" stroke="'+ln+'" stroke-width=".8"/></g>'});
   $('#slips').innerHTML=html;
 }
 function count(){
@@ -307,7 +326,7 @@ function all(){filters();jar(false);count();card(false);$('#clr').hidden=live||!
 /* ---------- load from the reading-shelf site ---------- */
 const KEY=new URLSearchParams(location.search).get('key')||'';
 const api=(p,o)=>fetch(p+(KEY?(p.includes('?')?'&':'?')+'key='+encodeURIComponent(KEY):''),o);
-lace();slips=SAMPLE;all();
+slips=SAMPLE;all();
 (async()=>{
   try{const r=await api('/api/tbr',{cache:'no-store'});const j=await r.json().catch(()=>({}));
     if(r.status===401){note('This jar is private. Open it from your Notion embed link.');return}
