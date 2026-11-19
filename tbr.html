@@ -235,7 +235,10 @@ const BOOKC=['#f9d3de','#f7c6d3','#fbe4ea','#f4b6c8','#fde8ef','#f1a7bd'],FICC=[
 function lace(){let s='';for(let i=0;i<36;i++){const a=i/36*Math.PI*2,x=150+Math.cos(a)*120,y=384+Math.sin(a)*15;s+='<circle cx="'+f(x)+'" cy="'+f(y)+'" r="8" fill="#fff" stroke="#f6c9d8"/>'}
   $('#lace').innerHTML=s+'<ellipse cx="150" cy="384" rx="118" ry="14" fill="url(#doily)" stroke="#f6c9d8"/><ellipse cx="150" cy="384" rx="100" ry="11" fill="none" stroke="#f9d7e3" stroke-dasharray="2 4"/>'}
 function jar(reshuffle){
-  const all=slips.slice(0,60),r=rng(reshuffle?Date.now():hash(all.map(s=>s.id).join())),n=all.length;
+  /* the jar shows up to 30 books and 30 fics so both colours show; draws still use every slip */
+  const mix=k=>slips.filter(s=>s.k===k).map(s=>[hash(s.id),s]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]).slice(0,30);
+  const all=[...mix('book'),...mix('fic')].map(s=>[hash(s.id+'j'),s]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+  const r=rng(reshuffle?Date.now():hash(all.map(s=>s.id).join())),n=all.length;
   const rowsN=Math.max(1,Math.ceil(n/7));let html='';
   all.forEach((s,i)=>{
     const row=Math.floor(i/7),col=i%7,fic=s.k==='fic',pal=fic?FICC:BOOKC;
