@@ -1,5 +1,5 @@
 // Reading candle <-> Notion "reading session tracker".
-// GET  /api/sessions?key=...  -> recent sessions + the books you're currently reading
+// GET  /api/sessions?key=...[&hub=fic]  -> recent sittings + what you're currently reading
 // POST /api/sessions?key=...  -> logs one sitting as a new row in the tracker
 // Your secret token stays here on the server (an environment variable), never in the web page.
 
@@ -9,11 +9,16 @@ const PROPS = {
   date: 'date', // a sitting is saved as a time range (start -> end), which gives its minutes
   pages: 'pages completed',
   unit: 'reading unit',
-  book: 'book',
 };
-const BOOK_STATUS = 'status';
-const READING = 'reading';
 const DAYS_BACK = 120;
+
+// Two hubs share the tracker: books (the pink candle) and fanfics (gamma draconis, ?hub=fic).
+const HUBS = {
+  book: { relation: 'book', other: 'fanfics', db: () => process.env.NOTION_BOOKS_DB, title: 'title',
+          status: 'status', reading: ['reading'], unit: 'pages' },
+  fic:  { relation: 'fanfics', other: null, db: () => process.env.NOTION_FICS_DB || '335ef276b3c280a0a264000b5ea183e3',
+          title: 'fic', status: 'reading status', reading: ['currently reading'], unit: 'chapters' },
+};
 
 const API = 'https://api.notion.com/v1';
 const headers = () => ({
@@ -73,33 +78,36 @@ async function namesFor(ids, known) {
   return names;
 }
 
-async function readingBooks() {
-  if (!process.env.NOTION_BOOKS_DB) return [];
-  const pages = await query(process.env.NOTION_BOOKS_DB, {
-    filter: { property: BOOK_STATUS, status: { equals: READING } },
+async function readingBooks(H) {
+  if (!H.db()) return [];
+  const pages = await query(H.db(), {
+    filter: { or: H.reading.map((name) => ({ property: H.status, status: { equals: name } })) },
   }, 100);
   return pages.map((p) => ({ id: p.id, t: titleOf(p) })).filter((b) => b.t);
 }
 
-async function findBook(title) {
-  if (!process.env.NOTION_BOOKS_DB || !title) return null;
-  const pages = await query(process.env.NOTION_BOOKS_DB, {
-    filter: { property: 'title', title: { equals: title } }, page_size: 5,
+async function findBook(H, title) {
+  if (!H.db() || !title) return null;
+  const pages = await query(H.db(), {
+    filter: { property: H.title, title: { equals: title } }, page_size: 5,
   }, 5);
   return pages[0] ? pages[0].id : null;
 }
 
-async function list(res) {
+async function list(res, H) {
   const since = new Date(Date.now() - DAYS_BACK * 864e5).toISOString().slice(0, 10);
+  const filters = [{ property: PROPS.date, date: { on_or_after: since } }];
+  if (H.other) filters.push({ property: H.other, relation: { is_empty: true } }); // book log skips fic sittings
+  else filters.push({ property: H.relation, relation: { is_not_empty: true } }); // fic log shows only fic sittings
   const [rows, reading] = await Promise.all([
     query(process.env.NOTION_READINGTRACKER_DB, {
-      filter: { property: PROPS.date, date: { on_or_after: since } },
+      filter: { and: filters },
       sorts: [{ property: PROPS.date, direction: 'descending' }],
     }),
-    readingBooks(),
+    readingBooks(H),
   ]);
   const known = Object.fromEntries(reading.map((b) => [b.id, b.t]));
-  const names = await namesFor(rows.flatMap((pg) => relIds(prop(pg.properties, PROPS.book)).slice(0, 1)), known);
+  const names = await namesFor(rows.flatMap((pg) => relIds(prop(pg.properties, H.relation)).slice(0, 1)), known);
 
   const sessions = rows.map((pg) => {
     const pr = pg.properties;
@@ -110,17 +118,17 @@ async function list(res) {
     const pages = prop(pr, PROPS.pages);
     return {
       d: start ? start.slice(0, 10) : null,
-      b: names[relIds(prop(pr, PROPS.book))[0]] || titleOf(pg) || 'Reading',
+      b: names[relIds(prop(pr, H.relation))[0]] || titleOf(pg) || 'Reading',
       m,
       p: pages && pages.number ? pages.number : 0,
     };
   }).filter((s) => s.d).reverse();
 
   res.setHeader('Cache-Control', 'no-store');
-  res.status(200).json({ sessions, reading });
+  res.status(200).json({ sessions, reading, unit: H.unit });
 }
 
-async function add(req, res) {
+async function add(req, res, H) {
   let body = req.body || {};
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   const book = String(body.book || '').trim().slice(0, 200);
@@ -130,15 +138,15 @@ async function add(req, res) {
     return res.status(400).json({ error: 'A sitting needs a start and end time.' });
 
   let bookId = /^[0-9a-f-]{32,36}$/i.test(body.bookId || '') ? body.bookId : null;
-  if (!bookId) bookId = await findBook(book);
+  if (!bookId) bookId = await findBook(H, book);
 
   const properties = {
     [PROPS.title]: { title: [{ text: { content: book || 'reading session' } }] },
     [PROPS.date]: { date: { start, end } },
     [PROPS.pages]: { number: pages },
-    [PROPS.unit]: { select: { name: 'pages' } },
+    [PROPS.unit]: { select: { name: H.unit } },
   };
-  if (bookId) properties[PROPS.book] = { relation: [{ id: bookId }] };
+  if (bookId) properties[H.relation] = { relation: [{ id: bookId }] };
 
   const ds = await sourceId(process.env.NOTION_READINGTRACKER_DB);
   const page = await notion('/pages', {
@@ -155,8 +163,9 @@ module.exports = async (req, res) => {
       return res.status(401).json({ error: 'This page is private.' });
     if (!process.env.NOTION_TOKEN || !process.env.NOTION_READINGTRACKER_DB)
       return res.status(500).json({ error: 'Set NOTION_TOKEN and NOTION_READINGTRACKER_DB in Vercel.' });
-    if (req.method === 'POST') return await add(req, res);
-    if (req.method === 'GET') return await list(res);
+    const H = HUBS[req.query.hub === 'fic' ? 'fic' : 'book'];
+    if (req.method === 'POST') return await add(req, res, H);
+    if (req.method === 'GET') return await list(res, H);
     res.status(405).json({ error: 'Use GET or POST.' });
   } catch (e) {
     res.status(500).json({ error: String(e.message || e) });
