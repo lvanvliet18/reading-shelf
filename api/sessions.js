@@ -9,6 +9,7 @@ const PROPS = {
   date: 'date', // a sitting is saved as a time range (start -> end), which gives its minutes
   pages: 'pages completed',
   unit: 'reading unit',
+  position: 'current position', // the page/chapter you ended on (your own fix: rolls up as max on the book/fic)
 };
 const DAYS_BACK = 120;
 
@@ -99,11 +100,17 @@ async function progressFor(H, reading) {
   const rows = await query(process.env.NOTION_READINGTRACKER_DB, {
     filter: { or: reading.slice(0, 50).map((b) => ({ property: H.relation, relation: { contains: b.id } })) },
   }, 1000);
-  const done = {};
+  // Prefer the furthest "current position" you logged; fall back to adding up sittings that have none.
+  const sum = {}, far = {};
   rows.forEach((pg) => {
-    const n = prop(pg.properties, PROPS.pages), id = relIds(prop(pg.properties, H.relation))[0];
-    if (id && n && n.number) done[id] = (done[id] || 0) + n.number;
+    const pr = pg.properties, id = relIds(prop(pr, H.relation))[0];
+    if (!id) return;
+    const n = prop(pr, PROPS.pages), pos = prop(pr, PROPS.position);
+    if (pos && typeof pos.number === 'number') far[id] = Math.max(far[id] || 0, pos.number);
+    else if (n && n.number) sum[id] = (sum[id] || 0) + n.number;
   });
+  const done = {};
+  new Set([...Object.keys(sum), ...Object.keys(far)]).forEach((id) => { done[id] = Math.max(far[id] || 0, sum[id] || 0); });
   return done;
 }
 
@@ -157,6 +164,7 @@ async function add(req, res, H) {
   const book = String(body.book || '').trim().slice(0, 200);
   const start = String(body.start || ''), end = String(body.end || '');
   const pages = Math.max(0, Math.round(Number(body.pages) || 0));
+  const position = Number.isFinite(Number(body.position)) && body.position !== null && body.position !== '' ? Math.max(0, Math.round(Number(body.position))) : null;
   if (!/^\d{4}-\d{2}-\d{2}T/.test(start) || !/^\d{4}-\d{2}-\d{2}T/.test(end))
     return res.status(400).json({ error: 'A sitting needs a start and end time.' });
 
@@ -169,6 +177,7 @@ async function add(req, res, H) {
     [PROPS.pages]: { number: pages },
     [PROPS.unit]: { select: { name: H.unit } },
   };
+  if (position !== null) properties[PROPS.position] = { number: position };
   if (bookId) properties[H.relation] = { relation: [{ id: bookId }] };
 
   const ds = await sourceId(process.env.NOTION_READINGTRACKER_DB);
