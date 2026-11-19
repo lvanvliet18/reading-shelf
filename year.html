@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>reading year</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<style>
+/* Same frame as the other reading widgets. Books are pink, fanfic is Slytherin green. Light only. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;
+--emerald:#1f6b47;--em-lt:#e3efe8;--em-mid:#b9d6c6;--paper:#fff;color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:22px 14px 24px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:26px 16px;align-items:stretch}
+@media(min-width:780px){.layout{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}}
+.stack{display:grid;gap:26px;min-width:0;align-content:start}
+.card{position:relative;background:var(--paper);border:2px solid var(--pink);border-radius:22px;padding:24px 20px 18px;min-width:0}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+.badge{position:absolute;top:14px;right:16px;font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:5px 9px}
+.key{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.key i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* ring */
+.ringcard{display:flex;flex-direction:column;align-items:center;text-align:center}
+.ring{position:relative;width:min(100%,270px);margin:2px auto 6px}
+.ring svg{width:100%;height:auto;display:block}
+.ring .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .n{font:700 64px/0.9 var(--serif);color:#111;font-variant-numeric:lining-nums proportional-nums;letter-spacing:-.01em}
+.ring .of{font:italic 500 18px/1.2 var(--serif);color:var(--muted)}
+.ring .pct{font:700 10px/1.8 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--pink)}
+.ring .fics{font:600 13px/1.4 var(--font);color:var(--emerald)}
+.tick{transition:fill .5s}
+.pace{font:600 24px/1.15 var(--serif);margin:6px 0 2px}
+.pace em{font-style:italic;color:var(--pink)}
+.sub{font-size:12.5px;color:var(--muted)}
+.sub b{color:var(--ink)}.sub .g{color:var(--emerald)}
+.goals{display:flex;gap:6px 18px;justify-content:center;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.goal{display:flex;align-items:center;gap:6px}
+.goal b{min-width:2.2em;text-align:center;color:var(--ink);font-variant-numeric:tabular-nums}
+.step{width:24px;height:24px;border-radius:50%;border:1px solid var(--pink-mid);background:#fff;color:var(--pink);font:700 14px/1 var(--font);cursor:pointer;padding:0}
+.step.g{border-color:var(--em-mid);color:var(--emerald)}
+.step:focus-visible,.pr:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* months */
+.months{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;align-items:end;height:170px;margin-top:8px;position:relative;overflow:hidden}
+.mo{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;position:relative}
+.stackbar{width:100%;max-width:30px;display:flex;flex-direction:column-reverse;border-radius:7px 7px 3px 3px;overflow:hidden;min-height:3px;background:#fbeef3}
+.stackbar i{display:block;width:100%;transition:height .6s ease}
+.stackbar .b{background:var(--pink)}
+.stackbar .f{background:var(--emerald)}
+.mo.future .stackbar{background:none;border:1.5px dashed var(--pink-mid);border-radius:7px 7px 3px 3px}
+.mo.now{color:var(--pink);font-weight:700}
+.num{font:600 11px/1.3 var(--font);letter-spacing:0;text-transform:none;white-space:nowrap;margin-bottom:3px;min-height:14px}
+.num .b{color:var(--pink)}.num .f{color:var(--emerald)}
+.target{position:absolute;left:0;right:0;border-top:1.5px dashed var(--pink-mid);pointer-events:none}
+.target span{position:absolute;right:0;top:-16px;font-size:10px;color:var(--pink);background:#fff;padding:0 4px}
+.mfoot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.mfoot b{color:var(--ink)}
+
+/* prompts */
+.prompts{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 18px}
+@media(min-width:560px){.prompts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.colhead{font:700 10px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--pink);margin:2px 0 4px}
+.colhead.g{color:var(--emerald)}
+.pr{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px;align-items:start;padding:6px 4px;border-radius:10px;background:none;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%}
+.pr:hover{background:#fff6fa}
+.pr.fic:hover{background:#f3f8f5}
+.box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--pink-mid);display:flex;align-items:center;justify-content:center;color:#fff;font:700 12px/1 var(--font);margin-top:1px}
+.pr.fic .box{border-color:var(--em-mid)}
+.pr.done .box{background:var(--pink);border-color:var(--pink)}
+.pr.fic.done .box{background:var(--emerald);border-color:var(--emerald)}
+.pt{font-size:13.5px;line-height:1.3}
+.pw{display:block;font:italic 600 15px/1.25 var(--serif);color:var(--pink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr.fic .pw{color:var(--emerald)}
+.pw.man{color:var(--muted);font-weight:500}
+.note{font-size:12px;color:var(--muted);margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tag{font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:4px 8px}
+@media (prefers-reduced-motion:reduce){.stackbar i,.tick{transition:none}}
+</style></head>
+<body><main>
+<div class="layout">
+<section class="card ringcard">
+  <span class="lbl" id="ylbl">2026 reading challenge</span>
+  <div class="ring">
+    <svg viewBox="0 0 260 260" id="ringsvg" role="img" aria-label="Progress toward your reading goals"></svg>
+    <div class="mid"><div class="n" id="nBooks">0</div><div class="of" id="ofBooks">of 40 books</div><div class="pct" id="pct">0% of your goal</div><div class="fics" id="nFics">+ 0 fics</div></div>
+  </div>
+  <div class="pace" id="pace"></div>
+  <div class="sub" id="paceSub"></div>
+  <div class="goals">
+    <div class="goal">books goal <button class="step" id="bm" aria-label="Lower book goal">−</button><b id="bg">40</b><button class="step" id="bp" aria-label="Raise book goal">+</button></div>
+    <div class="goal">fics goal <button class="step g" id="fm" aria-label="Lower fic goal">−</button><b id="fg">60</b><button class="step g" id="fp" aria-label="Raise fic goal">+</button></div>
+  </div>
+</section>
+
+<div class="stack">
+<section class="card">
+  <span class="lbl">Month by month</span>
+  <span class="badge" id="best"></span>
+  <div class="key"><span><i style="background:var(--pink)"></i>books</span><span><i style="background:var(--emerald)"></i>fanfic</span><span><i style="border:1.5px dashed var(--pink-mid)"></i>monthly book target</span></div>
+  <div class="months" id="months"></div>
+  <div class="mfoot"><span id="avg"></span></div>
+</section>
+<section class="card">
+  <span class="lbl">Challenge prompts</span>
+  <span class="badge" id="pdone"></span>
+  <div class="prompts" id="prompts"></div>
+  <div class="note"><span id="note">Prompts tick themselves from what you finish in Notion. Tap one to tick it by hand.</span><span id="sampleTag" hidden class="tag">example data</span></div>
+</section>
+</div>
+</div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const Q=new URLSearchParams(location.search),KEY=Q.get('key')||'';
+let YEAR=Q.get('year')||String(new Date().getFullYear());
+
+/* ---------- example year (shown until Notion loads) ---------- */
+const SB=[['Circe','Madeline Miller','fantasy',393,'01-20'],['Jane Eyre','Charlotte Brontë','classic',532,'02-14'],['A Court of Thorns and Roses','Sarah J. Maas','fantasy',419,'03-02'],['A Court of Mist and Fury','Sarah J. Maas','fantasy',626,'03-20'],
+ ['Pride and Prejudice','Jane Austen','classic',279,'04-11'],['Harry Potter and the Order of the Phoenix','J.K. Rowling','fantasy',766,'05-01'],['Fourth Wing','Rebecca Yarros','fantasy',498,'06-09'],['Iron Flame','Rebecca Yarros','fantasy',623,'07-04'],
+ ['Mexican Gothic','Silvia Moreno-Garcia','horror',301,'08-15'],['Onyx Storm','Rebecca Yarros','fantasy',544,'08-07'],['Atomic Habits','James Clear','self-development',320,'09-03'],['Wuthering Heights','Emily Brontë','classic',416,'10-02'],['The Women','Kristin Hannah','historical fiction',469,'10-20']]
+ .map(([t,a,g,p,d])=>({k:'book',t,a,g,p,d:YEAR+'-'+d}));
+const SF=[['Example epic fic','Epic (200-450k)','HG x DM',['Slow burn','Angst'],['8th Year'],'Complete','01-12'],['Example one-shot','One-Shot (>15k)','HG x DM',['Fluff'],['Adults'],'Complete','02-02'],['Example novel fic','Novel (50-200k)','HG x DM',['Slow burn'],['Hogwarts'],'WIP','03-09'],
+ ['Example rare pair','Novella (15-50k)','NL x PP',['Banter'],['Post War'],'Complete','04-21'],['Example novel fic 2','Novel (50-200k)','HG x DM',['Romance'],['Ministry'],'Complete','05-30'],['Example novella','Novella (15-50k)','HG x DM',['Angst'],['8th Year'],'Complete','06-14'],
+ ['Example novel fic 3','Novel (50-200k)','HG x DM',['Enemies to lovers'],['Post War'],'Complete','07-19'],['Example one-shot 2','One-Shot (>15k)','HG x DM',['Fluff'],['Hogwarts'],'Complete','09-09'],['Example novel fic 4','Novel (50-200k)','HG x DM',['Dark'],['War'],'Complete','10-28'],['Example novella 2','Novella (15-50k)','HG x DM',['Slow burn'],['Adults'],'Complete','11-04']]
+ .map(([t,len,pair,tags,era,ws,d])=>({k:'fic',t,a:'',len,pair,tags,era,ws,d:YEAR+'-'+d}));
+
+/* ---------- challenge prompts: classics + your shelf (pink), gamma draconis (green) ---------- */
+const CLASSICS=/pride and prejudice|wuthering heights|jane eyre|emma\b|persuasion|sense and sensibility|northanger|mansfield park|frankenstein|dracula|little women|great expectations|a tale of two cities|oliver twist|picture of dorian gray|anna karenina|north and south|middlemarch|count of monte cristo|les mis|moby.?dick|crime and punishment|the scarlet letter|madame bovary|villette|the tenant of wildfell hall|agnes grey|the woman in white|alice'?s adventures/i;
+const PROMPTS=[
+ {id:'classic',k:'book',t:'A classic written before 1900',m:b=>CLASSICS.test(b.t)||/classic/.test(b.g)},
+ {id:'bronte',k:'book',t:'A Brontë or an Austen',m:b=>/bront|austen/i.test(b.a)},
+ {id:'hogwarts',k:'book',t:'Back to Hogwarts: a Harry Potter book',m:b=>/harry potter/i.test(b.t)},
+ {id:'prythian',k:'book',t:'A trip to Prythian: a Sarah J. Maas book',m:b=>/maas/i.test(b.a)},
+ {id:'dragons',k:'book',t:'A book with dragons',m:b=>/fourth wing|iron flame|onyx storm|fire (&|and) blood|dragon|eragon|priory of the orange tree|temeraire/i.test(b.t)},
+ {id:'chunky',k:'book',t:'A book over 600 pages',m:b=>(b.p||0)>600},
+ {id:'epic',k:'fic',t:'An Epic fic (200k+ words)',m:f=>/epic|entire series/i.test(f.len||'')},
+ {id:'slowburn',k:'fic',t:'A Dramione slow burn',m:f=>/hg x dm/i.test(f.pair||'')&&(f.tags||[]).some(x=>/slow burn/i.test(x))},
+ {id:'eighth',k:'fic',t:'An 8th Year fic',m:f=>(f.era||[]).some(x=>/8th year/i.test(x))},
+ {id:'oneshot',k:'fic',t:'A one-shot in one sitting',m:f=>/one-shot/i.test(f.len||'')},
+ {id:'wip',k:'fic',t:'A WIP you caught up on',m:f=>/wip/i.test(f.ws||'')},
+ {id:'rarepair',k:'fic',t:'A rare pair (anything but Dramione)',m:f=>f.pair&&!/hg x dm|n\/a/i.test(f.pair)}];
+
+let books=[],fics=[],live=false;
+let G=store.get('yr-goals',{b:40,f:60});
+let manual=store.get('yr-manual-'+YEAR,{});
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* ---------- ring ---------- */
+function ring(){
+  const svg=$('#ringsvg'),nb=books.length,nf=fics.length;
+  const ticks=(n,goal,r,len,w,on,off)=>{const T=Math.min(Math.max(goal,1),60),fill=Math.round(Math.min(1,n/Math.max(goal,1))*T);let s='';
+    for(let i=0;i<T;i++){const a=(i/T)*Math.PI*2-Math.PI/2,x1=130+Math.cos(a)*r,y1=130+Math.sin(a)*r,x2=130+Math.cos(a)*(r-len),y2=130+Math.sin(a)*(r-len);
+      s+='<line class="tick" x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="'+(i<fill?on:off)+'" stroke-width="'+w+'" stroke-linecap="round"/>'}return s};
+  // where in the year we are: a little gold hand
+  const now=new Date(),ys=new Date(+YEAR,0,1),ye=new Date(+YEAR+1,0,1),frac=Math.min(1,Math.max(0,(now-ys)/(ye-ys))),ang=frac*Math.PI*2-Math.PI/2;
+  svg.innerHTML=ticks(nb,G.b,124,18,7,'#e24c85','#fbe0ea')+ticks(nf,G.f,98,12,5,'#1f6b47','#e3efe8')+
+    (+YEAR===now.getFullYear()?'<line x1="'+(130+Math.cos(ang)*84).toFixed(1)+'" y1="'+(130+Math.sin(ang)*84).toFixed(1)+'" x2="'+(130+Math.cos(ang)*128).toFixed(1)+'" y2="'+(130+Math.sin(ang)*128).toFixed(1)+'" stroke="#d9b46a" stroke-width="2.5" stroke-linecap="round"/><circle cx="'+(130+Math.cos(ang)*130).toFixed(1)+'" cy="'+(130+Math.sin(ang)*130).toFixed(1)+'" r="4" fill="#d9b46a"/>':'');
+  $('#nBooks').textContent=nb;$('#ofBooks').textContent='of '+G.b+' books';
+  $('#pct').textContent=Math.round(nb/Math.max(G.b,1)*100)+'% of your goal';
+  $('#nFics').textContent='+ '+nf+' of '+G.f+' fics';
+  $('#bg').textContent=G.b;$('#fg').textContent=G.f;
+  // pace
+  const expected=G.b*frac,diff=Math.round(nb-expected),left=Math.max(0,G.b-nb),daysLeft=Math.max(1,Math.round((ye-now)/864e5));
+  const fl=Math.max(0,G.f-nf);
+  if(left===0){$('#pace').innerHTML='goal reached · <em>bravo</em>'}
+  else if(diff>=0){$('#pace').innerHTML=(diff?diff+' '+(diff===1?'book':'books')+' ahead':'right on pace')+' · <em>lovely</em>'}
+  else{$('#pace').innerHTML=(-diff)+' '+(diff===-1?'book':'books')+' behind · <em>still time</em>'}
+  $('#paceSub').innerHTML=(left?'<b>'+left+'</b> to go · 1 book every <b>'+Math.max(1,Math.round(daysLeft/left))+'</b> days':'every book from here is a bonus')+
+    ' · <span class="g">'+(fl?fl+' fics to go':'fic goal reached')+'</span>';
+}
+
+/* ---------- months ---------- */
+function months(){
+  const now=new Date(),thisYear=+YEAR===now.getFullYear(),cur=thisYear?now.getMonth():11;
+  const per=MONTHS.map((_,i)=>({b:books.filter(x=>+x.d.slice(5,7)===i+1).length,f:fics.filter(x=>+x.d.slice(5,7)===i+1).length}));
+  const monthsLeft=thisYear?12-cur:0,need=monthsLeft?Math.max(0,(G.b-books.length)/monthsLeft):0;
+  const mx=Math.max(4,...per.map(x=>x.b+x.f)),H=120;
+  $('#months').innerHTML=per.map((x,i)=>{const fut=thisYear&&i>cur;
+    return '<div class="mo'+(fut?' future':'')+(thisYear&&i===cur?' now':'')+'" title="'+MONTHS[i]+': '+x.b+' books, '+x.f+' fics">'+
+      (fut?'<div class="num"><span class="b" title="books needed this month">'+(need?Math.ceil(need):'')+'</span></div>':'<div class="num">'+[x.b?'<span class="b">'+x.b+'</span>':'',x.f?'<span class="f">'+x.f+'</span>':''].filter(Boolean).join(' · ')+'</div>')+
+      '<div class="stackbar" style="height:'+(fut?Math.max(8,Math.min(H,Math.round(need/mx*H))):Math.max(3,Math.round((x.b+x.f)/mx*H)))+'px">'+(fut?'':'<i class="b" style="height:'+Math.round(x.b/mx*H)+'px"></i><i class="f" style="height:'+Math.round(x.f/mx*H)+'px"></i>')+'</div>'+
+      '<div style="margin-top:4px">'+MONTHS[i]+'</div></div>'}).join('');
+  const best=per.map((x,i)=>[x.b+x.f,i]).sort((a,b)=>b[0]-a[0])[0];
+  $('#best').textContent=best[0]?'best: '+MONTHS[best[1]]+' · '+best[0]:'';
+  const done=thisYear?cur+1:12,avg=(books.length/Math.max(1,done)).toFixed(1),favg=(fics.length/Math.max(1,done)).toFixed(1);
+  $('#avg').innerHTML='Average <b>'+avg+'</b> books and <b style="color:var(--emerald)">'+favg+'</b> fics a month'+(monthsLeft&&books.length<G.b?' · you need <b>'+need.toFixed(1)+'</b> books a month from here':'');
+}
+
+/* ---------- prompts ---------- */
+function prompts(){
+  const col=k=>PROMPTS.filter(p=>p.k===k).map(p=>{
+    const pool=p.k==='book'?books:fics,hit=[...pool].sort((a,b)=>a.d.localeCompare(b.d)).find(p.m),man=manual[p.id],done=!!hit||!!man;
+    return '<button class="pr'+(p.k==='fic'?' fic':'')+(done?' done':'')+'" data-id="'+p.id+'" aria-pressed="'+done+'"'+(hit?' title="Ticked from Notion"':'')+'><span class="box">'+(done?'✓':'')+'</span><span class="pt">'+esc(p.t)+
+      (hit?'<span class="pw">'+esc(hit.t)+'</span>':man?'<span class="pw man">ticked by you</span>':'')+'</span></button>'}).join('');
+  $('#prompts').innerHTML='<div><div class="colhead">classics & your shelf</div>'+col('book')+'</div><div><div class="colhead g">gamma draconis</div>'+col('fic')+'</div>';
+  const n=$('#prompts').querySelectorAll('.pr.done').length;$('#pdone').textContent=n+' / '+PROMPTS.length+' done';
+  $('#prompts').querySelectorAll('.pr').forEach(b=>b.onclick=()=>{const id=b.dataset.id,p=PROMPTS.find(x=>x.id===id),pool=p.k==='book'?books:fics;
+    if(pool.find(p.m)){$('#note').textContent='That one is ticked by "'+pool.find(p.m).t+'" in Notion.';return}
+    manual[id]=!manual[id];store.set('yr-manual-'+YEAR,manual);prompts()});
+}
+function all(){$('#ylbl').textContent=YEAR+' reading challenge';ring();months();prompts();$('#sampleTag').hidden=live}
+const setG=(k,d)=>{G[k]=Math.max(1,Math.min(400,G[k]+d));store.set('yr-goals',G);ring();months()};
+$('#bm').onclick=()=>setG('b',-1);$('#bp').onclick=()=>setG('b',1);$('#fm').onclick=()=>setG('f',-5);$('#fp').onclick=()=>setG('f',5);
+
+books=SB;fics=SF;all();
+(async()=>{
+  try{const qs=new URLSearchParams({key:KEY});if(Q.get('year'))qs.set('year',YEAR);
+    const r=await fetch('/api/year?'+qs,{cache:'no-store'});const j=await r.json().catch(()=>({}));
+    if(r.status===401){$('#note').textContent='This report is private. Open it from your Notion embed link.';return}
+    if(!r.ok||!Array.isArray(j.books))throw 0;
+    books=j.books;fics=j.fics||[];YEAR=j.year||YEAR;live=true;manual=store.get('yr-manual-'+YEAR,{});all();
+  }catch(e){$('#note').textContent='Showing an example year. Your Notion books and fics load on your reading-shelf site.'}
+})();
+</script>
+</body></html>
