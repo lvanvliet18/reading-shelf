@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>current reads</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<style>
+/* Same frame as "my shelf" and "reading candle": white page, triple pink card border, label on the border, 270px side card. Single light look on purpose. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;--paper:#fff;--gold:#e0bf74;--emerald:#1f6b47;--em-lt:#e3efe8;--em-mid:#b9d6c6;--silver:#a7b2ae;
+color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:30px 14px 36px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:30px 16px;align-items:start}
+@media(min-width:780px){.layout{grid-template-columns:minmax(0,1fr) 270px}}
+.card{position:relative;background:var(--paper);border:2px solid var(--pink);border-radius:22px;padding:26px 22px 22px;min-width:0}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.card.side{display:flex;flex-direction:column}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+h1{font:700 38px/1.05 var(--serif);margin:2px 0 4px;text-wrap:balance}
+h1 em{font-style:italic;color:var(--pink);font-weight:600}
+.meta{color:var(--muted);font-size:13px}.meta b{color:var(--green)}
+.sub{display:flex;align-items:center;gap:10px;font:700 11px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin:22px 0 10px}
+.sub::after{content:"";flex:1;height:1px;background:var(--pink-mid)}
+.side .sub:first-of-type{margin-top:4px}
+
+/* nightstand */
+.stand{display:flex;flex-direction:column}
+.bk{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--pink-lt)}
+.bk:last-child{border-bottom:0}
+.cov{grid-row:span 2;width:40px;height:58px;border-radius:4px 4px 2px 2px;position:relative;display:flex;align-items:center;justify-content:center;font-size:15px;color:#b08030;
+background-image:linear-gradient(90deg,#a97f33,#f3d98f 50%,#a97f33),linear-gradient(90deg,#a97f33,#f3d98f 50%,#a97f33),linear-gradient(90deg,rgba(150,60,90,.3),rgba(255,255,255,.35) 22%,rgba(255,255,255,.05) 50%,rgba(150,60,90,.26));
+background-size:80% 2px,80% 2px,100% 100%;background-position:center 7px,center calc(100% - 7px),center;background-repeat:no-repeat;
+box-shadow:2px 2px 5px rgba(110,80,50,.3),inset 0 0 0 1px rgba(170,70,100,.25)}
+.cov i{font-style:normal;background:rgba(255,250,240,.75);border:1px solid #c9a24d;border-radius:2px;padding:1px 4px;line-height:1.2}
+.cov.done::after{content:"";position:absolute;top:-2px;right:5px;width:7px;height:20px;background:linear-gradient(#f3d58c,#b98f3f);clip-path:polygon(0 0,100% 0,100% 100%,50% 80%,0 100%)}
+/* fanfic: Slytherin green with silver bands. Applies only to items marked as fic. */
+.g{color:var(--emerald)!important}
+.bk.fic .cov{background-image:linear-gradient(90deg,#6f7a76,#eef3f1 50%,#6f7a76),linear-gradient(90deg,#6f7a76,#eef3f1 50%,#6f7a76),linear-gradient(90deg,rgba(5,30,20,.45),rgba(255,255,255,.18) 22%,rgba(255,255,255,0) 50%,rgba(5,30,20,.4));box-shadow:2px 2px 5px rgba(10,40,25,.35),inset 0 0 0 1px rgba(10,50,30,.4)}
+.bk.fic .cov i{background:rgba(10,40,28,.55);border-color:var(--silver);color:#e9efec}
+.bk.fic .cov.done::after{background:linear-gradient(#eef3f1,#8d9893)}
+.bk.fic .au{color:var(--emerald)}
+.bk.fic .track{background:var(--em-lt)}.bk.fic .track i{background:var(--emerald)}
+.bk.fic .chip{border-color:var(--em-mid)}.bk.fic .chip:hover{border-color:var(--emerald);color:var(--emerald)}
+.bk.fic .chip.pop{animation-name:popg}
+@keyframes popg{40%{background:var(--emerald);color:#fff;border-color:var(--emerald)}}
+.bk.fic .pg .fin{color:var(--emerald)}
+.kind{display:inline-block;font:700 9px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:#fff;background:var(--emerald);border-radius:999px;padding:3px 7px;vertical-align:4px;margin-left:8px}
+.quote.fic{border-color:var(--em-lt);background:#f3f8f5}.quote.fic::before{color:var(--emerald)}.quote.fic small{color:var(--emerald)}
+.log.fic .btn{background:var(--emerald)}.log.fic input,.log.fic select{border-color:var(--em-mid)}
+.kinds{display:flex;gap:8px;margin-bottom:10px}
+.kopt{flex-direction:row!important;align-items:center;gap:6px!important;font-size:14px!important;color:var(--ink)!important;border:1px solid var(--pink-mid);border-radius:999px;padding:6px 14px;cursor:pointer;margin:0!important}
+.kopt input{width:auto;accent-color:var(--pink)}
+.kopt.fic{border-color:var(--em-mid)}.kopt.fic input{accent-color:var(--emerald)}
+#bf.fic .btn[value=save]{background:var(--emerald)}
+.bt{min-width:0}
+.bt h3{margin:0;font:700 22px/1.1 var(--serif);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt .au{font:italic 600 16px/1.2 var(--serif);color:var(--pink)}
+.bumps{display:flex;gap:6px;grid-row:span 2;align-self:center}
+.prog{display:flex;align-items:center;gap:12px;min-width:0}
+.track{flex:1;height:7px;border-radius:999px;background:var(--pink-lt);overflow:hidden;min-width:40px}
+.track i{display:block;height:100%;border-radius:999px;background:var(--pink);transition:width .5s ease}
+.pg{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pg b{color:var(--ink);font-weight:600}
+.pg .fin{color:var(--green);font-weight:700}
+@media(max-width:520px){.bk{grid-template-columns:auto minmax(0,1fr)}.bumps{grid-row:auto;grid-column:2;justify-content:flex-start}.cov{grid-row:span 3}}
+
+.chip{font:400 13px var(--font);border:1px solid var(--pink-mid);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--pink);color:var(--pink)}
+.chip.pop{animation:pop .45s ease}
+@keyframes pop{40%{background:var(--pink);color:#fff;border-color:var(--pink)}}
+.empty{color:var(--muted);font:italic 500 17px var(--serif);padding:14px 0}
+
+/* margin note */
+.quote{margin:18px 0 0;border:1px solid var(--pink-lt);background:#fff6fa;border-radius:14px;padding:14px 16px 12px 44px;position:relative;cursor:pointer}
+.quote::before{content:"\201C";position:absolute;left:14px;top:2px;font:700 46px/1 var(--serif);color:var(--pink)}
+.quote p{margin:0;font:italic 500 19px/1.3 var(--serif)}
+.quote small{display:block;margin-top:6px;font:700 10px/1.4 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+
+/* log row */
+.log{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin-top:16px}
+@media(max-width:600px){.log{grid-template-columns:1fr 1fr}.log select{grid-column:1/-1}.log .btn{grid-column:1/-1}}
+input,select,textarea{font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--pink-mid);background:var(--paper);border-radius:12px;padding:9px 11px;min-width:0;width:100%}
+.btn{font:700 14px var(--font);border:0;border-radius:999px;padding:10px 22px;cursor:pointer;background:var(--pink);color:#fff;white-space:nowrap}
+.btn.alt{background:var(--green-soft);color:var(--green)}
+.btn:disabled{opacity:.45;cursor:default}
+.foot{display:flex;justify-content:space-between;align-items:baseline;gap:6px 16px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--muted)}
+.foot em{font:italic 600 16px var(--serif);color:var(--ink)}
+.link{font:600 13px var(--font);background:none;border:0;color:var(--green);cursor:pointer;padding:4px 2px;text-decoration:underline;text-underline-offset:3px}
+.note{font-size:12px;color:var(--muted);min-height:18px;margin-top:6px}
+.chip:focus-visible,.btn:focus-visible,.link:focus-visible,input:focus-visible,select:focus-visible,.quote:focus-visible,.step:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* side card */
+.ringwrap{display:flex;justify-content:center;margin:2px 0 12px}
+.ring{position:relative;width:150px;height:150px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:10}
+.ring .bg{stroke:var(--pink-lt)}
+.ring .fg{stroke:var(--pink);stroke-linecap:round;transition:stroke-dashoffset .7s ease}
+.ring .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring b{font:700 46px/1 var(--serif);color:#111;font-variant-numeric:tabular-nums}
+.ring span{font-size:12px;color:var(--muted)}
+.ring.met .fg{stroke:var(--green)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#fff6fa;border:1px solid var(--pink-lt);border-radius:12px;padding:9px 11px}
+.stat b{display:block;font:700 22px/1.15 var(--font);color:#111;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:#111}
+.stat.fic{background:#f3f8f5;border-color:var(--em-lt)}
+.goal{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:13px;color:var(--muted)}
+.goal b{min-width:2.4em;text-align:center;color:var(--ink);font-variant-numeric:tabular-nums}
+.step{width:26px;height:26px;border-radius:50%;border:1px solid var(--pink-mid);background:var(--paper);color:var(--pink);font:700 15px/1 var(--font);cursor:pointer;padding:0}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:128px}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font-size:11px;color:var(--muted)}
+.bar i{display:block;width:100%;max-width:24px;border-radius:6px 6px 2px 2px;background:var(--pink-mid);min-height:3px;transition:height .5s ease}
+.bar.today i{background:var(--pink)}
+.bar.today{color:var(--pink);font-weight:700}
+.bar small{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar em{font:600 9px/1 var(--font);font-style:normal;color:var(--emerald);white-space:nowrap}.bar em.none{color:transparent}
+textarea{resize:vertical;font-family:var(--serif)!important;font-size:17px!important;font-style:italic}
+.wk{font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:4px 8px;margin-left:auto}
+.sub .wk{flex:none}
+.sub.withtag::after{display:none}
+.year{display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--pink-mid)}
+.year svg{width:54px;height:54px;flex:none;transform:rotate(-90deg)}
+.year circle{fill:none;stroke-width:6}
+.year .bg{stroke:var(--green-soft)}.year .fg{stroke:var(--green);stroke-linecap:round;transition:stroke-dashoffset .7s ease}
+.year h4{margin:0;font:700 21px/1.1 var(--serif)}
+.year h4 small{font:400 12px var(--font);color:var(--muted)}
+.year p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.tag{font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:4px 8px}
+.sfoot{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+
+dialog{border:2px solid var(--pink);border-radius:22px;padding:22px;width:min(400px,92vw);color:var(--ink);font:400 14px var(--font)}
+dialog::backdrop{background:rgba(18,53,36,.35)}
+dialog h3{font:700 26px var(--serif);margin:0 0 10px}
+dialog label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);margin-bottom:8px}
+dialog .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+dialog .acts{display:flex;gap:8px;margin-top:6px}
+@media (prefers-reduced-motion:reduce){.track i,.ring .fg,.year .fg,.bar i{transition:none}.chip.pop{animation:none}}
+</style></head>
+<body><main>
+<div class="layout">
+<section class="card">
+  <span class="lbl">Reading today</span>
+  <h1 id="hello">good afternoon, <em>reader</em>.</h1>
+  <div class="meta" id="meta"></div>
+
+  <div class="sub">On the nightstand</div>
+  <div class="stand" id="stand"></div>
+
+  <figure class="quote" id="quote" tabindex="0" role="button" aria-label="Show another margin note"><p id="qt"></p><small id="qs"></small></figure>
+
+  <form class="log" id="logf">
+    <select id="lbook" aria-label="Book"></select>
+    <input id="lpages" type="number" min="1" inputmode="numeric" placeholder="pages" aria-label="Pages read">
+    <input id="lmins" type="number" min="0" inputmode="numeric" placeholder="minutes" aria-label="Minutes read">
+    <button class="btn" id="lgo">log reading</button>
+  </form>
+  <div class="note" id="note" aria-live="polite"></div>
+  <div class="foot">
+    <span>Up next: <em id="next"></em></span>
+    <span><button class="link" id="clr" type="button">clear examples</button> <button class="link" id="addnote" type="button">+ margin note</button> <button class="link" id="add" type="button">+ add a book or fic</button></span>
+  </div>
+</section>
+
+<aside class="card side">
+  <span class="lbl">Pages today</span>
+  <div class="ringwrap"><div class="ring" id="ring">
+    <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="ringfg" cx="60" cy="60" r="52"/></svg>
+    <div class="mid"><b id="pToday">0</b><span id="pOf">of 60 pages</span></div>
+  </div></div>
+  <div class="stats">
+    <div class="stat"><b id="sMin">0</b><span>minutes read</span></div>
+    <div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
+    <div class="stat fic"><b id="sCh" class="g">0</b><span>fic chapters today</span></div>
+    <div class="stat fic"><b id="sOpen" class="g">0</b><span>fics in progress</span></div>
+  </div>
+  <div class="goal">daily goal <button class="step" id="gm" aria-label="Lower daily goal">−</button><b id="goal">60</b><button class="step" id="gp" aria-label="Raise daily goal">+</button> pages</div>
+
+  <div class="sub withtag">This week <span class="wk" id="wkTotal">0 pages</span></div>
+  <div class="week" id="week"></div>
+
+  <div class="year">
+    <svg viewBox="0 0 54 54" aria-hidden="true"><circle class="bg" cx="27" cy="27" r="22"/><circle class="fg" id="yfg" cx="27" cy="27" r="22"/></svg>
+    <div><h4 id="yTitle"></h4><p id="yPace"></p></div>
+  </div>
+  <div class="sfoot" id="sfoot"></div>
+</aside>
+</div>
+
+<dialog id="dlg"><form method="dialog" id="bf">
+<h3>add to the nightstand</h3>
+<div class="kinds" role="group" aria-label="Type"><label class="kopt"><input type="radio" name="fk" value="book" checked> book</label><label class="kopt fic"><input type="radio" name="fk" value="fic"> fanfic</label></div>
+<label>title<input id="ft" required></label>
+<label><span id="faL">author</span><input id="fa"></label>
+<div class="two"><label><span id="fpL">total pages</span><input id="fp" type="number" min="1"></label><label><span id="fcL">on page</span><input id="fc" type="number" min="0" value="0"></label></div>
+<div class="acts"><button class="btn" value="save">add it</button><button class="btn alt" value="cancel" formnovalidate>cancel</button></div>
+</form></dialog>
+
+<dialog id="ndlg"><form method="dialog" id="nf">
+<h3>add a margin note</h3>
+<label>the line, word for word<textarea id="nq" rows="4" required></textarea></label>
+<div class="two"><label>from<select id="nb"></select></label><label><span id="npL">page</span><input id="np" type="number" min="1"></label></div>
+<div class="acts"><button class="btn" value="save">save note</button><button class="btn alt" value="cancel" formnovalidate>cancel</button></div>
+</form></dialog>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return dayKey(d)};
+const GLYPHS=['✦','❦','❖','✧','❀','✶','❋'];
+const PINKS=['#f7c6d3','#f1a7bd','#f9d3de','#ee9db6','#f6bcc9','#eeaec1'];
+const GREENS=['#1f6b47','#185a3e','#2a7d58','#174d36','#226f4c'];
+const hash=s=>[...String(s)].reduce((a,c)=>a+c.charCodeAt(0),0);
+const isFic=b=>b&&b.k==='fic';
+const U=b=>isFic(b)?{one:'chapter',many:'chapters',ab:'ch.',bump:[1,3]}:{one:'page',many:'pages',ab:'p.',bump:[10,25]};
+
+/* ---------- state: books and fanfic together. Fic progress is in chapters, books in pages. ---------- */
+const SAMPLE_BOOKS=[
+ {id:'s1',t:'The Starless Sea',a:'Erin Morgenstern',p:498,c:312},
+ {id:'s2',t:'Wuthering Heights',a:'Emily Brontë',p:416,c:188},
+ {id:'s4',k:'fic',t:'This Bitter Earth',a:'',p:32,c:14},
+ {id:'s3',t:'Mexican Gothic',a:'Silvia Moreno-Garcia',p:301,c:64}];
+const SAMPLE_LOG=[[6,'s2',48,55],[5,'s1',62,70],[4,'s1',40,45],[3,'s2',35,40],[3,'s4',4,50,'fic'],[2,'s1',55,60],[1,'s3',30,35],[1,'s4',2,30,'fic'],[0,'s1',24,30],[0,'s2',18,20],[0,'s4',3,40,'fic']]
+ .map(([o,b,p,m,k])=>({d:daysAgo(o),b,p,m,k:k||'book'}));
+const NEXT_SAMPLE=['The Bell Jar','Lessons in Chemistry','The Name of the Wind'];
+/* Exact wording from public-domain texts. Shown only until you save margin notes of your own. */
+const CLASSICS=[
+ {q:"I've dreamt in my life, dreams that have stayed with me ever after, and changed my ideas; they've gone through and through me, like wine through water, and altered the colour of my mind.",t:'Wuthering Heights',a:'Emily Brontë'},
+ {q:'Whatever our souls are made of, his and mine are the same.',t:'Wuthering Heights',a:'Emily Brontë'},
+ {q:'I am no bird; and no net ensnares me: I am a free human being with an independent will.',t:'Jane Eyre',a:'Charlotte Brontë'},
+ {q:'There is no charm equal to tenderness of heart.',t:'Emma',a:'Jane Austen'},
+ {q:'It is a far, far better thing that I do, than I have ever done; it is a far, far better rest that I go to than I have ever known.',t:'A Tale of Two Cities',a:'Charles Dickens'}];
+
+let saved=store.get('cr-state',null);
+let S=saved||{books:SAMPLE_BOOKS,log:SAMPLE_LOG,next:NEXT_SAMPLE,sample:true};
+S.log.forEach(x=>{if(!x.k)x.k='book'});
+let notes=store.get('cr-notes',[]);
+S.goal=store.get('cr-goal',60);S.yearGoal=store.get('cr-ygoal',40);
+let shelfCount=0,live=false,liveShelf=false,qi=hash(dayKey());
+const save=()=>{if(!live)store.set('cr-state',{books:S.books,log:S.log,next:S.next,sample:S.sample})};
+const fresh=()=>({books:[],log:[],next:[],sample:false,goal:S.goal,yearGoal:S.yearGoal});
+
+/* ---------- render ---------- */
+function greet(){
+  const h=new Date().getHours(),part=h<5?'night':h<12?'morning':h<17?'afternoon':'evening';
+  $('#hello').innerHTML=(part==='night'?'still up, ':'good '+part+', ')+'<em>reader</em>.';
+  const open=S.books.filter(b=>!b.p||b.c<b.p),nf=open.filter(isFic).length,nb=open.length-nf;
+  $('#meta').innerHTML=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})+' · <b>'+nb+'</b> '+(nb===1?'book':'books')+(nf?' and <b class="g">'+nf+'</b> '+(nf===1?'fic':'fics'):'')+' on the nightstand';
+}
+function cover(b){const g=GLYPHS[hash(b.t)%GLYPHS.length],pal=isFic(b)?GREENS:PINKS,col=pal[hash(b.t)%pal.length],done=b.p&&b.c>=b.p;
+  return '<div class="cov'+(done?' done':'')+'" style="background-color:'+col+'" aria-hidden="true"><i>'+g+'</i></div>'}
+function stand(){
+  const el=$('#stand');
+  if(!S.books.length){el.innerHTML='<div class="empty">Nothing on the nightstand. Add the book or fic you\'re reading.</div>'}
+  else el.innerHTML=S.books.map(b=>{
+    const u=U(b),pct=b.p?Math.min(100,Math.round(b.c/b.p*100)):0,done=b.p&&b.c>=b.p,fic=isFic(b);
+    return '<div class="bk'+(fic?' fic':'')+'" data-id="'+esc(b.id)+'">'+cover(b)+
+      '<div class="bt"><h3>'+esc(b.t)+(fic?'<span class="kind">fic</span>':'')+'</h3><div class="au">'+esc(b.a||(fic?'fanfiction':''))+'</div></div>'+
+      '<div class="bumps">'+(done?'':u.bump.map(n=>'<button class="chip" data-n="'+n+'" aria-label="Add '+n+' '+(n===1?u.one:u.many)+' to '+esc(b.t)+'">+'+n+(fic?' ch':'')+'</button>').join(''))+'</div>'+
+      '<div class="prog"><div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct+'" aria-label="'+esc(b.t)+' progress"><i style="width:'+pct+'%"></i></div>'+
+      '<span class="pg">'+(done?'<span class="fin">finished ✦</span> · '+b.p+(fic?' ch':' pp'):b.p?u.ab+' <b>'+b.c+'</b> / '+b.p+' · '+pct+'%':u.ab+' <b>'+b.c+'</b>')+'</span></div></div>'}).join('');
+  el.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{const id=btn.closest('.bk').dataset.id;btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');logIt(id,+btn.dataset.n,0)});
+  const sel=$('#lbook'),cur=sel.value;
+  sel.innerHTML=S.books.filter(b=>!b.p||b.c<b.p).map(b=>'<option value="'+esc(b.id)+'">'+esc(b.t)+(isFic(b)?' (fic)':'')+'</option>').join('')||'<option value="">nothing open</option>';
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+  units();
+}
+function units(){const b=S.books.find(x=>x.id===$('#lbook').value),u=U(b);$('#lpages').placeholder=u.many;$('#lpages').setAttribute('aria-label',u.many+' read');$('#logf').classList.toggle('fic',isFic(b))}
+function quote(){
+  const pool=notes.length?notes:CLASSICS,n=pool[qi%pool.length],fic=n.k==='fic';
+  $('#quote').classList.toggle('fic',fic);$('#qt').textContent=n.q;
+  $('#qs').textContent=(notes.length?'Margin note · ':'From the classics · ')+n.t+(n.a?', '+n.a:'')+(n.pg?' · '+(fic?'ch. ':'p. ')+n.pg:'');
+  $('#quote').setAttribute('aria-label',pool.length>1?'Show another margin note':'Margin note');
+}
+function side(){
+  const today=dayKey(),t=S.log.filter(x=>x.d===today),bk=x=>x.k!=='fic',sum=(l,f)=>l.reduce((a,x)=>a+(f(x)?(x.p||0):0),0);
+  const pages=sum(t,bk),ch=sum(t,x=>!bk(x)),mins=t.reduce((a,x)=>a+(x.m||0),0);
+  $('#pToday').textContent=pages;$('#pOf').textContent='of '+S.goal+' pages';$('#goal').textContent=S.goal;$('#sMin').textContent=mins;$('#sCh').textContent=ch;
+  const C=2*Math.PI*52,fg=$('#ringfg');fg.style.strokeDasharray=C;fg.style.strokeDashoffset=C*(1-Math.min(1,pages/S.goal));
+  $('#ring').classList.toggle('met',pages>=S.goal);
+  const days=new Set(S.log.filter(x=>x.p>0).map(x=>x.d));let st=0,i=days.has(today)?0:1;while(days.has(daysAgo(i))){st++;i++}
+  $('#sStreak').textContent=st+(st>=3?' 🔥':'');
+  $('#sOpen').textContent=S.books.filter(b=>isFic(b)&&b.c<(b.p||Infinity)).length;
+  const per=[...Array(7)].map((_,i)=>{const k=daysAgo(6-i),l=S.log.filter(x=>x.d===k);return{k,p:sum(l,bk),c:sum(l,x=>!bk(x))}}),mx=Math.max(S.goal,...per.map(x=>x.p));
+  const wc=per.reduce((a,x)=>a+x.c,0);
+  $('#wkTotal').innerHTML=per.reduce((a,x)=>a+x.p,0)+' pages'+(wc?' · <span class="g">'+wc+' ch</span>':'');
+  $('#week').innerHTML=per.map((x,i)=>'<div class="bar'+(i===6?' today':'')+'" title="'+x.p+' pages'+(x.c?', '+x.c+' fic chapters':'')+'"><small>'+(x.p||'')+'</small><i style="height:'+Math.round(x.p/mx*72)+'px"></i>'+(x.c?'<em>'+x.c+' ch</em>':'<em class="none">·</em>')+new Date(x.k+'T00:00').toLocaleDateString(undefined,{weekday:'short'}).slice(0,2)+'</div>').join('');
+  const yearRead=liveShelf?shelfCount:S.sample?13:S.books.filter(b=>!isFic(b)&&b.p&&b.c>=b.p).length;
+  const ficsDone=S.sample?4:S.books.filter(b=>isFic(b)&&b.p&&b.c>=b.p).length;
+  const now=new Date(),start=new Date(now.getFullYear(),0,1),frac=(now-start)/(new Date(now.getFullYear()+1,0,1)-start),pace=Math.round(S.yearGoal*frac),diff=yearRead-pace,left=Math.max(0,S.yearGoal-yearRead);
+  const Y=2*Math.PI*22,yf=$('#yfg');yf.style.strokeDasharray=Y;yf.style.strokeDashoffset=Y*(1-Math.min(1,yearRead/S.yearGoal));
+  $('#yTitle').innerHTML=yearRead+' of '+S.yearGoal+' books <small>· '+Math.round(yearRead/S.yearGoal*100)+'%</small>';
+  $('#yPace').innerHTML=esc(left===0?'goal reached. anything more is a bonus':diff>=0?(diff?diff+' ahead of pace · ':'right on pace · ')+left+' to go':(-diff)+' behind pace · you\'ve got this · '+left+' to go')+(ficsDone?'<br><span class="g">+ '+ficsDone+' '+(ficsDone===1?'fic':'fics')+' finished</span>':'');
+  $('#sfoot').innerHTML=live?'<span>Synced with your Notion reading trackers.</span>':S.sample?'<span class="tag">example data</span><span>stays on this device</span>':'<span>Every page counts.</span>';
+}
+function foot(){$('#next').textContent=S.next.length?S.next.join(' · '):'nothing queued yet';$('#clr').hidden=!S.sample||live}
+function all(){greet();stand();quote();side();foot()}
+
+/* ---------- logging ---------- */
+const note=t=>{$('#note').textContent=t};
+const iso=d=>{const z=-d.getTimezoneOffset(),p=n=>String(Math.floor(Math.abs(n))).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+(z>=0?'+':'-')+p(z/60)+':'+p(z%60)};
+async function logIt(id,n,mins){
+  const b=S.books.find(x=>x.id===id);if(!b||!(n>0))return;const u=U(b);
+  if(live){
+    try{const end=new Date(),r=await api('/api/sessions'+(isFic(b)?'?hub=fic':''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:b.t,bookId:b.id,start:iso(new Date(end-mins*60000)),end:iso(end),pages:n})});
+      const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('error '+r.status));note(isFic(b)?'Saved to your Notion fic tracker.':'Saved to your Notion reading tracker.')}
+    catch(e){note("Couldn't save to Notion: "+e.message+'. Nothing was changed.');return}
+  }
+  b.c=b.p?Math.min(b.p,b.c+n):b.c+n;
+  S.log.push({d:dayKey(),b:id,p:n,m:mins,k:isFic(b)?'fic':'book'});
+  if(b.p&&b.c>=b.p)note('You finished '+b.t+'. ✦');
+  else if(!live)note('+'+n+' '+(n===1?u.one:u.many)+' of '+b.t+'.');
+  save();all();
+}
+$('#lbook').addEventListener('change',units);
+$('#logf').addEventListener('submit',e=>{e.preventDefault();const b=S.books.find(x=>x.id===$('#lbook').value),p=+$('#lpages').value,m=+$('#lmins').value||0;
+  if(!(p>0)){note('Add how many '+U(b).many+' you read.');$('#lpages').focus();return}
+  logIt($('#lbook').value,p,m);$('#lpages').value='';$('#lmins').value=''});
+$('#quote').onclick=()=>{qi++;quote()};
+$('#quote').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();qi++;quote()}};
+const setGoal=v=>{S.goal=Math.max(5,Math.min(500,v));store.set('cr-goal',S.goal);side()};
+$('#gm').onclick=()=>setGoal(S.goal-5);$('#gp').onclick=()=>setGoal(S.goal+5);
+$('#clr').onclick=()=>{S=fresh();save();all();note('Examples cleared. Add what you\'re reading.')};
+
+/* add a book or fic */
+const dlg=$('#dlg');
+function kindUI(){const fic=document.querySelector('input[name=fk]:checked').value==='fic';
+  $('#faL').textContent=fic?'author (AO3 name)':'author';$('#fpL').textContent=fic?'total chapters':'total pages';$('#fcL').textContent=fic?'on chapter':'on page';$('#bf').classList.toggle('fic',fic)}
+document.querySelectorAll('input[name=fk]').forEach(r=>r.onchange=kindUI);
+$('#add').onclick=()=>{kindUI();dlg.showModal()};
+$('#bf').addEventListener('submit',e=>{if(e.submitter&&e.submitter.value!=='save')return;
+  const t=$('#ft').value.trim();if(!t)return;const k=document.querySelector('input[name=fk]:checked').value;
+  if(S.sample)S=fresh();
+  S.books.push({id:'m'+Date.now(),k,t,a:$('#fa').value.trim(),p:+$('#fp').value||null,c:+$('#fc').value||0});
+  $('#bf').reset();save();all();note(live?'Added here only. Add it in Notion to keep it synced.':'Added '+t+' to the nightstand.')});
+
+/* margin notes: your own lines, word for word, tied to what you're reading */
+const ndlg=$('#ndlg');
+const npUI=()=>{const b=S.books.find(x=>x.id===$('#nb').value);$('#npL').textContent=isFic(b)?'chapter':'page'};
+$('#nb').addEventListener('change',npUI);
+$('#addnote').onclick=()=>{$('#nb').innerHTML=S.books.map(b=>'<option value="'+esc(b.id)+'">'+esc(b.t)+(isFic(b)?' (fic)':'')+'</option>').join('')+'<option value="">something else</option>';npUI();ndlg.showModal()};
+$('#nf').addEventListener('submit',e=>{if(e.submitter&&e.submitter.value!=='save')return;
+  const q=$('#nq').value.trim();if(!q)return;const b=S.books.find(x=>x.id===$('#nb').value);
+  notes.push({q,t:b?b.t:'my notes',a:b?b.a:'',k:b&&isFic(b)?'fic':'book',pg:+$('#np').value||null});
+  store.set('cr-notes',notes);qi=notes.length-1;$('#nf').reset();quote();note('Margin note saved.')});
+
+/* ---------- reading-shelf site: real data when served from it, otherwise the device copy above ---------- */
+const KEY=new URLSearchParams(location.search).get('key')||'';
+const api=(p,o)=>fetch(p+(KEY?(p.includes('?')?'&':'?')+'key='+encodeURIComponent(KEY):''),o);
+async function pull(hub){const r=await api('/api/sessions'+(hub?'?hub='+hub:''),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();if(!Array.isArray(j.sessions)||!Array.isArray(j.reading))throw 0;return j}
+(async()=>{
+  try{const r=await api('/api/books',{cache:'no-store'});if(r.ok){const j=await r.json();if(Array.isArray(j.books)){shelfCount=j.books.length;liveShelf=true}}}catch(e){}
+  const got=[];
+  for(const [hub,k] of [['','book'],['fic','fic']]){try{got.push([await pull(hub),k])}catch(e){}}
+  if(got.length){
+    live=true;S=fresh();
+    got.forEach(([j,k])=>{
+      const books=j.reading.map(b=>({id:b.id||(k+':'+b.t),k,t:b.t,a:b.a||'',p:b.p||null,c:b.c||0}));
+      const byT={};books.forEach(b=>byT[b.t.toLowerCase()]=b.id);
+      S.books.push(...books);
+      S.log.push(...j.sessions.map(s=>({d:s.d,b:byT[(s.b||'').toLowerCase()]||s.b,p:s.p||0,m:s.m||0,k})));
+      if(k==='book'&&Array.isArray(j.next))S.next=j.next;
+    });
+  }
+  all();
+})();
+all();
+setInterval(greet,60000);
+</script>
+</body></html>
