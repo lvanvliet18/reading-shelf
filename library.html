@@ -172,7 +172,7 @@ const SAMPLE=[
 {t:'Pride and Prejudice',a:'Jane Austen',g:'romance',p:279,r:4,d:'2026-10-20',n:5}];
 const Q=new URLSearchParams(location.search),KEY=Q.get('key')||'',DEMO=Q.has('demo');
 let live=false,base=[],mine=[],all=[],books=[],sort='title',sel=null,filt='owned',pg=0,pages=1;
-const ROWS=3; /* shelves per view; the arrows page through the rest */
+const ROWS=2; /* shelves per view; the arrows page through the rest */
 /* filters: 'owned' = everything except the wishlist */
 const FILTERS=[['owned','all I own',b=>b.s!=='wishlist'],['read','read',b=>b.s==='read'],['to read','want to read',b=>b.s==='to read'],['reading','reading',b=>b.s==='reading'],['fav','favourites',b=>b.f&&b.s!=='wishlist'],['wishlist','wishlist',b=>b.s==='wishlist']];
 const applyFilter=()=>{const f=FILTERS.find(x=>x[0]===filt);books=all.filter(f[2]);if(sel&&!books.includes(sel))sel=null};
