@@ -10,7 +10,8 @@ const PROPS = {
   rating: 'rating',
   author: '[author]',
   genre: '[genre]',
-  favourite: 'favourite', // optional checkbox. If you don't have one, 5-star books count as favourites.
+  favourite: 'favourite',
+  type: 'type', // ebook / audio / hardcopy / fanfiction // optional checkbox. If you don't have one, 5-star books count as favourites.
 };
 const READ_STATUS = (process.env.STATUS_READ || 'read').toLowerCase();
 
@@ -108,9 +109,14 @@ module.exports = async (req, res) => {
     }
 
     // keep finished books whose finish (or start) date falls in the chosen year
-    const mine = pages.filter((pg) => {
+    const statusOf = (pg) => {
       const st = prop(pg.properties, PROPS.status);
-      const name = st && (st.status || st.select) ? (st.status || st.select).name.toLowerCase() : '';
+      return st && (st.status || st.select) ? (st.status || st.select).name.toLowerCase() : '';
+    };
+    const ALL = req.query.scope === 'all'; // the library shelf: every book, whatever its status
+    const mine = pages.filter((pg) => {
+      if (ALL) return !!titleOf(pg);
+      const name = statusOf(pg);
       if (name !== READ_STATUS) return false;
       if (year === 'all') return true;
       const d = dateOf(prop(pg.properties, PROPS.finished)) || dateOf(prop(pg.properties, PROPS.started));
@@ -138,6 +144,8 @@ module.exports = async (req, res) => {
         d: fin,
         n,
         f: favBox && favBox.type === 'checkbox' ? favBox.checkbox : r >= 5,
+        s: statusOf(pg),
+        k: (() => { const ty = prop(pr, PROPS.type); return ty && ty.select ? ty.select.name.toLowerCase() : ''; })(),
       };
     });
 
