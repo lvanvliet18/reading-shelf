@@ -15,9 +15,9 @@ const DAYS_BACK = 120;
 // Two hubs share the tracker: books (the pink candle) and fanfics (gamma draconis, ?hub=fic).
 const HUBS = {
   book: { relation: 'book', other: 'fanfics', db: () => process.env.NOTION_BOOKS_DB, title: 'title',
-          status: 'status', reading: ['reading'], unit: 'pages' },
+          status: 'status', reading: ['reading'], unit: 'pages', total: 'pages', author: '[author]' },
   fic:  { relation: 'fanfics', other: null, db: () => process.env.NOTION_FICS_DB || '335ef276b3c280a0a264000b5ea183e3',
-          title: 'fic', status: 'reading status', reading: ['currently reading'], unit: 'chapters' },
+          title: 'fic', status: 'reading status', reading: ['currently reading'], unit: 'chapters', total: 'chapters', author: 'author' },
 };
 
 const API = 'https://api.notion.com/v1';
@@ -83,7 +83,28 @@ async function readingBooks(H) {
   const pages = await query(H.db(), {
     filter: { or: H.reading.map((name) => ({ property: H.status, status: { equals: name } })) },
   }, 100);
-  return pages.map((p) => ({ id: p.id, t: titleOf(p) })).filter((b) => b.t);
+  return pages.map((p) => {
+    const pr = p.properties, tot = prop(pr, H.total), au = prop(pr, H.author);
+    let a = '', aIds = [];
+    if (au && au.type === 'select' && au.select) a = au.select.name;
+    else if (au && au.type === 'rich_text') a = au.rich_text.map((x) => x.plain_text).join('');
+    else aIds = relIds(au).slice(0, 1);
+    return { id: p.id, t: titleOf(p), a, aIds, p: tot && typeof tot.number === 'number' ? tot.number : null };
+  }).filter((b) => b.t);
+}
+
+// How far into each current read: the sum of every logged sitting linked to it (all time).
+async function progressFor(H, reading) {
+  if (!reading.length) return {};
+  const rows = await query(process.env.NOTION_READINGTRACKER_DB, {
+    filter: { or: reading.slice(0, 50).map((b) => ({ property: H.relation, relation: { contains: b.id } })) },
+  }, 1000);
+  const done = {};
+  rows.forEach((pg) => {
+    const n = prop(pg.properties, PROPS.pages), id = relIds(prop(pg.properties, H.relation))[0];
+    if (id && n && n.number) done[id] = (done[id] || 0) + n.number;
+  });
+  return done;
 }
 
 async function findBook(H, title) {
@@ -107,6 +128,8 @@ async function list(res, H) {
     readingBooks(H),
   ]);
   const known = Object.fromEntries(reading.map((b) => [b.id, b.t]));
+  const [done, authors] = await Promise.all([progressFor(H, reading), namesFor(reading.flatMap((b) => b.aIds), {})]);
+  reading.forEach((b) => { b.c = done[b.id] || 0; if (!b.a && b.aIds[0]) b.a = authors[b.aIds[0]] || ''; delete b.aIds; });
   const names = await namesFor(rows.flatMap((pg) => relIds(prop(pg.properties, H.relation)).slice(0, 1)), known);
 
   const sessions = rows.map((pg) => {
