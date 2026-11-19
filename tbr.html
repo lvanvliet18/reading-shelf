@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tbr jar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<style>
+/* Same frame as "my shelf", "reading candle" and "current reads". Books are pink, fanfic is Slytherin green. Light only. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;
+--emerald:#1f6b47;--em-lt:#e3efe8;--em-mid:#b9d6c6;--paper:#fff;color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:22px 14px 24px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:26px 16px;align-items:stretch}
+@media(min-width:760px){.layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
+.stack{display:grid;gap:26px;min-width:0;align-content:start}
+.card{position:relative;background:var(--paper);border:2px solid var(--pink);border-radius:22px;padding:24px 20px 18px;min-width:0}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+h1{font:700 32px/1.05 var(--serif);margin:0 0 2px}
+h1 em{font-style:italic;color:var(--pink);font-weight:600}
+.meta{color:var(--muted);font-size:13px}.meta b{color:var(--pink)}.meta b.g{color:var(--emerald)}
+
+/* jar card */
+.jarcard{display:flex;flex-direction:column}
+.stage{position:relative;flex:1;min-height:330px;display:flex;align-items:flex-end;justify-content:center;margin-top:4px}
+#jar{width:min(100%,300px);height:auto;overflow:visible}
+#jarbody{transform-box:view-box;transform-origin:150px 380px}
+.shaking #jarbody{animation:shake .9s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:rotate(-2deg)}20%,80%{transform:rotate(4deg)}30%,50%,70%{transform:rotate(-7deg)}40%,60%{transform:rotate(7deg)}}
+.slip{transition:transform .6s cubic-bezier(.2,.9,.3,1.2)}
+.slip.dim{opacity:.28}
+#flyer{opacity:0}
+.flying #flyer{animation:fly .9s ease-out .55s forwards}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(70px,-230px) rotate(28deg)}}
+.count{text-align:center;font-size:13px;color:var(--muted);margin:6px 0 10px}
+.count b{color:var(--ink)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:700 13px var(--font);letter-spacing:.08em;text-transform:uppercase;border:0;border-radius:999px;padding:12px 22px;cursor:pointer;background:var(--pink);color:#fff}
+.btn.wide{flex:1}
+.btn.alt{background:var(--green-soft);color:var(--green)}
+.btn.ghost{background:none;color:var(--muted);padding:12px 10px}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.fic{background:var(--emerald)}
+
+/* filters */
+.frow{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;align-items:start;padding:6px 0}
+.frow+.frow{border-top:1px dashed var(--pink-lt)}
+.flbl{font:700 10px/26px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:400 12.5px var(--font);border:1px solid var(--pink-mid);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.chip.fic{border-color:var(--em-mid)}
+.chip.fic[aria-pressed="true"]{background:var(--emerald);border-color:var(--emerald)}
+.chip:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* the drawn slip */
+.slipcard{position:relative;border-radius:6px;padding:16px 18px 16px 40px;min-height:200px;
+background:repeating-linear-gradient(#fff 0 25px,#f6dbe5 25px 26px);box-shadow:0 1px 0 #f3d2de,0 8px 18px rgba(170,70,100,.12);border:1px solid #f4d7e1}
+.slipcard::before{content:"";position:absolute;left:26px;top:0;bottom:0;width:2px;background:#f1a7bd}
+.slipcard.fic{background:repeating-linear-gradient(#fff 0 25px,#dcebe2 25px 26px);border-color:#d3e5da;box-shadow:0 1px 0 #cfe2d6,0 8px 18px rgba(20,80,50,.12)}
+.slipcard.fic::before{background:#8fc1a5}
+.slipcard.show{animation:unfold .55s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes unfold{0%{opacity:0;transform:translateY(-14px) rotate(-3deg) scaleY(.4)}100%{opacity:1;transform:none}}
+.kicker{font:700 10.5px/26px var(--font);letter-spacing:.16em;text-transform:uppercase;color:var(--pink)}
+.fic .kicker{color:var(--emerald)}
+.slipcard h2{margin:0;font:700 30px/1.05 var(--serif);padding-right:86px;text-wrap:balance}
+.slipcard .au{font:italic 600 18px/26px var(--serif);color:var(--pink)}
+.fic .au{color:var(--emerald)}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
+.pill{font:700 10px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:5px 9px;background:var(--pink-lt);color:var(--pink)}
+.fic .pill{background:var(--em-lt);color:var(--emerald)}
+.pill.solid{background:var(--pink);color:#fff}.fic .pill.solid{background:var(--emerald)}
+.line{font:500 16px/26px var(--serif);margin:0}
+.line a{color:var(--emerald);font:600 13px var(--font);text-underline-offset:3px}
+.stamp{position:absolute;top:14px;right:14px;border:2px solid var(--pink);color:var(--pink);border-radius:8px;padding:4px 8px;font:700 10px/1.25 var(--font);letter-spacing:.12em;text-transform:uppercase;text-align:center;transform:rotate(8deg);opacity:.85}
+.fic .stamp{border-color:var(--emerald);color:var(--emerald)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:200px;color:var(--muted);font:italic 500 19px/1.3 var(--serif);padding:10px 20px 10px 0}
+.empty small{font:400 12px var(--font);font-style:normal;margin-top:6px}
+.after{margin-top:12px}
+.note{font-size:12px;color:var(--muted);min-height:18px;margin-top:8px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.link{font:600 12px var(--font);background:none;border:0;color:var(--green);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+@media (prefers-reduced-motion:reduce){.shaking #jarbody,.flying #flyer,.slipcard.show{animation:none}.slip{transition:none}}
+</style></head>
+<body><main>
+<div class="layout">
+<section class="card jarcard">
+  <span class="lbl">The TBR jar</span>
+  <h1>shake the <em>jar</em></h1>
+  <div class="meta" id="meta">loading your slips…</div>
+  <div class="stage" id="stage">
+    <svg id="jar" viewBox="0 0 300 400" role="img" aria-label="A glass apothecary jar of paper slips tied with a pink satin bow">
+      <defs>
+        <linearGradient id="glass" x1="0" x2="1"><stop offset="0" stop-color="#eef3f2" stop-opacity=".75"/><stop offset=".12" stop-color="#fff" stop-opacity=".25"/><stop offset=".5" stop-color="#fff" stop-opacity=".06"/><stop offset=".85" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#dfe8e6" stop-opacity=".8"/></linearGradient>
+        <linearGradient id="rim" x1="0" x2="1"><stop offset="0" stop-color="#d9e2e0"/><stop offset=".3" stop-color="#fff"/><stop offset=".7" stop-color="#f3f7f6"/><stop offset="1" stop-color="#cfd9d6"/></linearGradient>
+        <linearGradient id="satin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7b9cf"/><stop offset=".35" stop-color="#fde2ec"/><stop offset=".6" stop-color="#f29bbb"/><stop offset="1" stop-color="#e7799f"/></linearGradient>
+        <linearGradient id="satinH" x1="0" x2="1"><stop offset="0" stop-color="#e7799f"/><stop offset=".4" stop-color="#fbd3e1"/><stop offset=".7" stop-color="#f29bbb"/><stop offset="1" stop-color="#e06d96"/></linearGradient>
+        <radialGradient id="doily"><stop offset="0" stop-color="#fff"/><stop offset=".8" stop-color="#fff6fa"/><stop offset="1" stop-color="#fde6ef"/></radialGradient>
+        <clipPath id="inside"><path d="M66 150 Q60 152 58 170 L56 352 Q56 372 80 374 L220 374 Q244 372 244 352 L242 170 Q240 152 234 150Z"/></clipPath>
+        <filter id="soft"><feGaussianBlur stdDeviation="5"/></filter>
+      </defs>
+      <!-- lace doily coaster -->
+      <ellipse cx="150" cy="384" rx="128" ry="16" fill="rgba(170,70,100,.12)" filter="url(#soft)"/>
+      <g id="lace"></g>
+      <g id="jarbody">
+        <!-- slips sit inside the glass -->
+        <g clip-path="url(#inside)"><g id="slips"></g></g>
+        <!-- glass body -->
+        <path d="M78 120 L78 138 Q58 142 56 168 L54 352 Q54 378 82 380 L218 380 Q246 378 246 352 L244 168 Q242 142 222 138 L222 120Z" fill="url(#glass)" stroke="#c9d6d3" stroke-width="2"/>
+        <path d="M70 176 Q68 260 72 340" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75" fill="none"/>
+        <path d="M84 168 Q82 200 83 222" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6" fill="none"/>
+        <path d="M232 190 Q235 270 230 342" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".4" fill="none"/>
+        <!-- neck + lid -->
+        <rect x="74" y="112" width="152" height="14" rx="5" fill="url(#rim)" stroke="#c9d6d3" stroke-width="1.5"/>
+        <path d="M68 112 Q70 84 150 80 Q230 84 232 112Z" fill="url(#glass)" stroke="#c9d6d3" stroke-width="2"/>
+        <path d="M86 104 Q100 90 140 88" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8" fill="none"/>
+        <rect x="138" y="62" width="24" height="20" rx="5" fill="url(#rim)" stroke="#c9d6d3" stroke-width="1.5"/>
+        <circle cx="150" cy="48" r="17" fill="url(#glass)" stroke="#c9d6d3" stroke-width="2"/>
+        <circle cx="144" cy="42" r="5" fill="#fff" opacity=".8"/>
+        <!-- satin ribbon band + bow -->
+        <path d="M55 232 Q150 246 245 232 L245 252 Q150 266 55 252Z" fill="url(#satin)"/>
+        <path d="M55 236 Q150 250 245 236" stroke="#fff" stroke-opacity=".6" stroke-width="1.4" fill="none"/>
+        <g transform="translate(150 249)">
+          <path d="M-4 4 Q-20 40 -34 62 L-24 58 L-20 70 Q-8 40 4 8Z" fill="url(#satinH)"/>
+          <path d="M4 4 Q22 36 40 56 L30 54 L28 66 Q12 38 -2 8Z" fill="url(#satinH)"/>
+          <path d="M-2 0 Q-38 -30 -52 -8 Q-56 10 -2 6Z" fill="url(#satin)" stroke="#e06d96" stroke-width="1"/>
+          <path d="M2 0 Q38 -30 52 -8 Q56 10 2 6Z" fill="url(#satin)" stroke="#e06d96" stroke-width="1"/>
+          <path d="M-8 -2 Q-30 -18 -40 -6" stroke="#fff" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M8 -2 Q30 -18 40 -6" stroke="#c95a83" stroke-opacity=".5" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <rect x="-9" y="-6" width="18" height="16" rx="6" fill="#ec8aae" stroke="#e06d96"/>
+        </g>
+        <!-- hanging tag -->
+        <path d="M176 262 Q186 278 190 286" stroke="#d9a3b6" stroke-width="1.5" fill="none"/>
+        <g transform="translate(168 284) rotate(-12)">
+          <path d="M0 8 L10 0 L62 0 L62 34 L10 34 L0 26Z" fill="#fffaf5" stroke="#e8c9d3" stroke-width="1.5"/>
+          <circle cx="9" cy="17" r="2.6" fill="#fff" stroke="#d9a3b6"/>
+          <text x="38" y="23" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="16" font-weight="700" fill="#e24c85">TBR</text>
+        </g>
+      </g>
+      <!-- the slip that flies out on a shake -->
+      <g id="flyer" transform="translate(130 120)"><rect width="46" height="22" rx="2" fill="#f9d3de" stroke="#e8a9bf"/><path d="M8 8h28M8 14h22" stroke="#e8a9bf"/></g>
+    </svg>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="acts"><button class="btn wide" id="shake">shake the jar</button></div>
+</section>
+
+<div class="stack">
+<section class="card">
+  <span class="lbl">Tonight I'm in the mood for</span>
+  <div id="filters"></div>
+</section>
+<section class="card">
+  <span class="lbl">Your next read</span>
+  <div id="card"></div>
+  <div class="acts after" id="cardActs" hidden>
+    <button class="btn" id="startBtn">read this next ✓</button>
+    <button class="btn alt" id="again">draw again</button>
+    <button class="btn ghost" id="skip">skip</button>
+  </div>
+  <div class="note"><span id="note" aria-live="polite">Every slip is a book or fic from your TBR in Notion.</span><button class="link" id="clr" hidden>clear examples</button></div>
+</section>
+</div>
+</div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hash=s=>[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))|0,7);
+const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const f=n=>(+n).toFixed(1);
+
+/* ---------- example slips until your Notion TBR loads ---------- */
+const SAMPLE=[
+ {id:'s1',k:'book',t:'The Starless Sea',a:'Erin Morgenstern',g:'fantasy',p:498,tags:['magic library','stories within stories']},
+ {id:'s2',k:'book',t:'Mexican Gothic',a:'Silvia Moreno-Garcia',g:'horror',p:301,tags:['haunted house','gothic']},
+ {id:'s3',k:'book',t:'Beach Read',a:'Emily Henry',g:'romance',p:361,tags:['rivals to lovers']},
+ {id:'s4',k:'book',t:'The Thursday Murder Club',a:'Richard Osman',g:'mystery',p:382,tags:['cozy mystery']},
+ {id:'s5',k:'book',t:'Remarkably Bright Creatures',a:'Shelby Van Pelt',g:'contemporary',p:368,tags:['found family']},
+ {id:'s6',k:'fic',t:'Example fic one',a:'',g:'fanfic',ch:32,len:'Novel (50-200k)',pair:'HG x DM',tags:['Slow burn','Angst']},
+ {id:'s7',k:'fic',t:'Example fic two',a:'',g:'fanfic',ch:6,len:'Novella (15-50k)',pair:'HG x DM',tags:['Fluff','Banter']}];
+
+/* ---------- moods come from genres, tropes and tags ---------- */
+const MOODS=[
+ ['cozy',/cozy|cosy|fluff|rom.?com|comedy|humou?r|contemporary|found family|small town|banter|slice of life/],
+ ['dark',/dark|horror|thriller|gothic|crime|angst|villain|death|war|dystopi/],
+ ['romantic',/roman|love|slow burn|lovers|marriage|soul bond|pregnan|smut|courtship/],
+ ['mysterious',/myster|secret|detective|crime|thriller|whodunit|suspense|magic/],
+ ['adventurous',/fantasy|adventure|action|quest|sci.?fi|science fiction|time travel|heist|war/],
+ ['emotional',/angst|hurt|grief|drama|historical|literary|tragedy|emotional|family/],
+ ['reflective',/non.?fiction|self|memoir|biograph|philosoph|classic|literary|essay|poetry/]];
+const moodsOf=s=>{const txt=[s.g,...(s.tags||[]),s.k==='fic'&&s.pair&&s.pair!=='N/A'?'romance':''].join(' ').toLowerCase();return MOODS.filter(([,r])=>r.test(txt)).map(([m])=>m)};
+/* length: books by pages, fics by AO3 length (or chapters) */
+const sizeOf=s=>{if(s.k==='fic'){const l=(s.len||'').toLowerCase();if(/one-shot|novella/.test(l))return 'short';if(/novel/.test(l)&&!/novella/.test(l))return 'medium';if(/epic|series/.test(l))return 'long';const c=s.ch||0;return !c?'':c<10?'short':c<35?'medium':'long'}
+  const p=s.p||0;return !p?'':p<350?'short':p<=500?'medium':'long'};
+const LEN=[['short','short'],['medium','medium'],['long','long']];
+const lenHint={short:'under 350 pp · one-shots & novellas',medium:'350–500 pp · novels',long:'500+ pp · epics'};
+
+let slips=[],live=false,F=store.get('tbr-f',{type:'any',mood:'any',len:'any',genre:'any'}),drawn=store.get('tbr-drawn',null),skipped=new Set();
+const saveF=()=>store.set('tbr-f',F);
+
+function matches(s,ignore){
+  if(ignore!=='type'&&F.type!=='any'&&s.k!==F.type)return false;
+  if(ignore!=='mood'&&F.mood!=='any'&&!moodsOf(s).includes(F.mood))return false;
+  if(ignore!=='len'&&F.len!=='any'&&sizeOf(s)!==F.len)return false;
+  if(ignore!=='genre'&&F.genre!=='any'){const g=F.genre;if(s.k==='fic'?!(s.tags||[]).map(x=>x.toLowerCase()).includes(g):s.g!==g)return false}
+  return true}
+const pool=()=>slips.filter(s=>matches(s));
+
+/* ---------- filters ---------- */
+function topGenres(){
+  const c={},useFic=F.type==='fic';
+  slips.filter(s=>matches(s,'genre')).forEach(s=>{(useFic?(s.k==='fic'?s.tags||[]:[]):(s.k==='book'&&s.g?[s.g]:[])).forEach(g=>{g=g.toLowerCase();c[g]=(c[g]||0)+1})});
+  return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,7).map(x=>x[0]);
+}
+function chipRow(label,key,opts,cls){
+  return '<div class="frow"><div class="flbl">'+label+'</div><div class="chips" role="group" aria-label="'+label+'">'+
+    [['any','any'],...opts].map(([v,l])=>'<button class="chip'+(cls&&cls(v)?' fic':'')+'" data-k="'+key+'" data-v="'+esc(v)+'" aria-pressed="'+(F[key]===v)+'"'+(key==='len'&&lenHint[v]?' title="'+lenHint[v]+'"':'')+'>'+esc(l)+'</button>').join('')+'</div></div>'}
+function filters(){
+  const gs=topGenres();if(F.genre!=='any'&&!gs.includes(F.genre))gs.push(F.genre);
+  $('#filters').innerHTML=
+    chipRow('reading','type',[['book','books'],['fic','fanfic']],v=>v==='fic')+
+    chipRow('mood','mood',MOODS.map(([m])=>[m,m]))+
+    chipRow('length','len',LEN)+
+    chipRow(F.type==='fic'?'tags':'genre','genre',gs.map(g=>[g,g]),()=>F.type==='fic');
+  $('#filters').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const k=b.dataset.k;F[k]=b.dataset.v;if(k==='type')F.genre='any';saveF();filters();jar(false);count()})}
+
+/* ---------- the jar ---------- */
+const BOOKC=['#f9d3de','#f7c6d3','#fbe4ea','#f4b6c8','#fde8ef','#f1a7bd'],FICC=['#cfe6d8','#b9d6c6','#e3efe8','#a7cbb6','#d9ece1'];
+function lace(){let s='';for(let i=0;i<36;i++){const a=i/36*Math.PI*2,x=150+Math.cos(a)*120,y=384+Math.sin(a)*15;s+='<circle cx="'+f(x)+'" cy="'+f(y)+'" r="8" fill="#fff" stroke="#f6c9d8"/>'}
+  $('#lace').innerHTML=s+'<ellipse cx="150" cy="384" rx="118" ry="14" fill="url(#doily)" stroke="#f6c9d8"/><ellipse cx="150" cy="384" rx="100" ry="11" fill="none" stroke="#f9d7e3" stroke-dasharray="2 4"/>'}
+function jar(reshuffle){
+  const all=slips.slice(0,60),r=rng(reshuffle?Date.now():hash(all.map(s=>s.id).join())),n=all.length;
+  const rowsN=Math.max(1,Math.ceil(n/7));let html='';
+  all.forEach((s,i)=>{
+    const row=Math.floor(i/7),col=i%7,fic=s.k==='fic',pal=fic?FICC:BOOKC;
+    const x=74+col*24+r()*14,y=360-row*Math.min(22,170/rowsN)-r()*10,rot=(r()-.5)*70,c=pal[Math.floor(r()*pal.length)];
+    html+='<g class="slip'+(matches(s)?'':' dim')+'" transform="translate('+f(x)+' '+f(y)+') rotate('+f(rot)+')"><rect x="-23" y="-10" width="46" height="20" rx="2" fill="'+c+'" stroke="'+(fic?'#8fc1a5':'#e8a9bf')+'" stroke-width=".8"/><path d="M-15 -3h28M-15 3h20" stroke="'+(fic?'#8fc1a5':'#e8a9bf')+'" stroke-width=".8"/></g>'});
+  $('#slips').innerHTML=html;
+}
+function count(){
+  const m=pool().length,b=slips.filter(s=>s.k==='book').length,fc=slips.length-b;
+  $('#count').innerHTML='<b>'+slips.length+'</b> slips in the jar · <b>'+m+'</b> match your mood';
+  $('#meta').innerHTML='<b>'+b+'</b> '+(b===1?'book':'books')+' and <b class="g">'+fc+'</b> '+(fc===1?'fic':'fics')+' waiting to be read';
+  $('#shake').disabled=!m;$('#shake').textContent=m?'shake the jar':'no slips match';
+}
+
+/* ---------- the drawn slip ---------- */
+const fmtDay=d=>new Date(d+'T00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'});
+function card(anim){
+  const s=drawn&&slips.find(x=>x.id===drawn.id);
+  $('#cardActs').hidden=!s;
+  if(!s){$('#card').innerHTML='<div class="slipcard"><div class="empty">Shake the jar to pull a slip.<small>Pick a mood first, or leave everything on any.</small></div></div>';return}
+  const fic=s.k==='fic',ms=moodsOf(s).slice(0,2);
+  const size=fic?(s.ch?s.ch+' chapters':s.len||''):(s.p?s.p+' pages':'');
+  const eves=fic?(s.ch?Math.max(1,Math.round(s.ch/3)):0):(s.p?Math.max(1,Math.round(s.p/40)):0);
+  $('#card').innerHTML='<div class="slipcard'+(fic?' fic':'')+(anim?' show':'')+'">'+
+    '<div class="stamp">drawn<br>'+esc(fmtDay(drawn.d))+'</div>'+
+    '<div class="kicker">up next · '+esc(fic?'fanfic'+(s.pair&&s.pair!=='N/A'?' · '+s.pair:''):(s.g||'book'))+'</div>'+
+    '<h2>'+esc(s.t)+'</h2><div class="au">'+esc(s.a||(fic?'anonymous':''))+'</div>'+
+    '<div class="pills">'+(size?'<span class="pill solid">'+esc(size)+'</span>':'')+ms.map(m=>'<span class="pill">'+esc(m)+'</span>').join('')+'</div>'+
+    (s.tags&&s.tags.length?'<p class="line">'+(fic?'Tags: ':'Tropes: ')+esc(s.tags.slice(0,3).join(' · '))+'</p>':'')+
+    (eves?'<p class="line">About '+eves+' '+(eves===1?'evening':'evenings')+' at '+(fic?'3 chapters':'40 pages')+' a night.</p>':'')+
+    (fic&&s.url?'<p class="line"><a href="'+esc(s.url)+'" target="_blank" rel="noopener">open on AO3 ↗</a></p>':'')+
+    '</div>';
+  $('#startBtn').className='btn'+(fic?' fic':'');
+  $('#startBtn').disabled=!!drawn.started;$('#startBtn').textContent=drawn.started?'reading now ✓':'read this next ✓';
+}
+function draw(){
+  const p=pool().filter(s=>!skipped.has(s.id)&&!(drawn&&drawn.id===s.id));
+  const list=p.length?p:pool();if(!list.length)return;
+  const s=list[Math.floor(Math.random()*list.length)];
+  drawn={id:s.id,d:new Date().toISOString().slice(0,10)};store.set('tbr-drawn',drawn);
+}
+let busy=false;
+function shake(){
+  if(busy||!pool().length)return;busy=true;
+  const st=$('#stage');st.classList.remove('shaking','flying');void st.offsetWidth;st.classList.add('shaking','flying');
+  const quiet=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(()=>jar(true),quiet?0:450);
+  setTimeout(()=>{draw();card(true);note(live?'Every slip is a book or fic from your TBR in Notion.':'These are example slips. Your Notion TBR shows up on your reading-shelf site.');busy=false},quiet?50:1150);
+}
+const note=t=>{$('#note').textContent=t};
+$('#shake').onclick=shake;
+$('#again').onclick=shake;
+$('#skip').onclick=()=>{if(drawn)skipped.add(drawn.id);drawn=null;store.set('tbr-drawn',null);card();note('Skipped. It stays in the jar for another night.')};
+$('#startBtn').onclick=async()=>{
+  const s=drawn&&slips.find(x=>x.id===drawn.id);if(!s)return;
+  if(!live){drawn.started=true;store.set('tbr-drawn',drawn);card();note('Example only. On your site this marks it as reading in Notion.');return}
+  $('#startBtn').disabled=true;$('#startBtn').textContent='saving…';
+  try{const r=await api('/api/tbr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s.id,kind:s.k,date:new Date().toLocaleDateString('en-CA')})});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('error '+r.status));
+    drawn.started=true;store.set('tbr-drawn',drawn);card();note('Marked as '+(s.k==='fic'?'currently reading':'reading')+' in Notion. It will show on current reads.')}
+  catch(e){note("Couldn't update Notion: "+e.message);card()}};
+$('#clr').onclick=()=>{slips=[];drawn=null;store.set('tbr-drawn',null);all();note('Examples cleared.')};
+
+function all(){filters();jar(false);count();card(false);$('#clr').hidden=live||!slips.length}
+
+/* ---------- load from the reading-shelf site ---------- */
+const KEY=new URLSearchParams(location.search).get('key')||'';
+const api=(p,o)=>fetch(p+(KEY?(p.includes('?')?'&':'?')+'key='+encodeURIComponent(KEY):''),o);
+lace();slips=SAMPLE;all();
+(async()=>{
+  try{const r=await api('/api/tbr',{cache:'no-store'});const j=await r.json().catch(()=>({}));
+    if(r.status===401){note('This jar is private. Open it from your Notion embed link.');return}
+    if(!r.ok||!Array.isArray(j.slips))throw new Error(j.error||r.status);
+    slips=j.slips;live=true;all();
+  }catch(e){note('Showing example slips. Your Notion TBR loads on your reading-shelf site.')}
+})();
+</script>
+</body></html>
