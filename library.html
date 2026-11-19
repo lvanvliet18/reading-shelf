@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>my library</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;--line:#f2cddc;--gold:#e0bf74;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:30px 14px 36px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:30px 16px}
+@media(min-width:780px){.layout{grid-template-columns:minmax(0,1fr) 270px}}
+.card{position:relative;background:#fff;border:2px solid var(--pink);border-radius:22px;padding:26px 22px 22px}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card.side{display:flex;flex-direction:column}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:#fff;padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+h1{font:700 38px/1.05 var(--serif);margin:2px 0 4px}
+h1 em{font-style:italic;color:var(--pink);font-weight:600}
+.meta{color:var(--muted);font-size:13px}.meta b{color:var(--green)}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--font);font-size:13px;border:1px solid var(--pink-mid);background:#fff;color:var(--ink);border-radius:999px;padding:5px 13px;cursor:pointer;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.chip:focus-visible,.spine:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+/* cabinet */
+#shelf{margin:0;padding:16px 16px 4px;
+background:repeating-linear-gradient(90deg,#f0e6d3 0 52px,#e0d3bc 52px 54px),linear-gradient(#f4ecdb,#eadfca);
+box-shadow:inset 0 10px 14px -6px rgba(110,85,50,.35),inset 8px 0 10px -6px rgba(110,85,50,.22),inset -8px 0 10px -6px rgba(110,85,50,.22)}
+.cab{position:relative;margin-top:34px;padding:0 44px}
+.cab::before{content:"";position:absolute;z-index:0;left:0;right:0;top:84px;bottom:0;border-radius:0 0 4px 4px;background:repeating-linear-gradient(89deg,rgba(255,255,255,.4) 0 2px,transparent 2px 11px,rgba(150,120,80,.14) 11px 12px,transparent 12px 23px),linear-gradient(#f5eddd,#e9dec9);box-shadow:0 0 0 1px #d6c8ae,0 10px 20px rgba(110,85,50,.22)}
+.cab>*{position:relative;z-index:1}
+.cab>.ps{position:absolute;z-index:3}
+.crown{position:relative;z-index:2;height:130px;margin:0 -52px}
+.arch{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 3px 3px rgba(110,85,50,.25))}
+.orn{position:absolute;left:50%;top:-34px;z-index:2;transform:translateX(-50%)}
+.cart{position:absolute;left:50%;bottom:10px;transform:translateX(-50%)}
+.acan{position:absolute;bottom:14px}.acan.l{left:19%}.acan.r{right:19%;transform:scaleX(-1)}
+.ros{position:absolute;bottom:16px}.ros.l{left:2.6%}.ros.r{right:2.6%}
+.ps{position:absolute;width:44px;pointer-events:none}
+.ps.l{left:0}.ps.r{right:0;transform:scaleX(-1)}
+.ps.t{top:134px}.ps.b{bottom:42px}
+.base{height:34px;margin:0 -52px;background:linear-gradient(#f3ead8 0 8px,#d9cbb0 8px 10px,#ece1cc 10px);border-radius:0 0 6px 6px;box-shadow:0 6px 10px rgba(110,85,50,.25)}
+.row{position:relative;display:flex;align-items:flex-end;gap:3px;padding:0 6px;min-height:160px}
+.board{height:14px;margin:0 -16px 14px;background:linear-gradient(#fffaf0 0 3px,#f1e7d3 3px,#dccfb7);box-shadow:0 5px 7px rgba(110,85,50,.3)}
+.spine{position:relative;border:0;border-radius:5px 5px 2px 2px/7px 7px 2px 2px;padding:34px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;flex:none;transition:transform .2s;
+background-image:linear-gradient(90deg,#a97f33,#f3d98f 50%,#a97f33),linear-gradient(90deg,#a97f33,#f3d98f 50%,#a97f33),linear-gradient(rgba(255,255,255,.45),rgba(150,60,90,.28)),linear-gradient(rgba(255,255,255,.45),rgba(150,60,90,.28)),linear-gradient(90deg,#a97f33,#f3d98f 50%,#a97f33),linear-gradient(90deg,#a97f33,#f3d98f 50%,#a97f33),radial-gradient(ellipse at 50% 100%,rgba(255,235,200,.16),transparent 45%),linear-gradient(90deg,rgba(150,60,90,.32),rgba(255,255,255,.35) 20%,rgba(255,255,255,.05) 48%,rgba(150,60,90,.28)),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1 0 0 0 0 .05 0 0 0 0 0 0 0 0 .45 -.1'/></filter><rect width='80' height='80' filter='url(%23n)'/></svg>");
+background-size:84% 2px,84% 1px,100% 5px,100% 5px,84% 1px,84% 2px,100% 100%,100% 100%,80px 80px;
+background-position:center 9px,center 14px,center 19px,center calc(100% - 24px),center calc(100% - 14px),center calc(100% - 9px),center,center,0 0;
+background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,repeat;
+box-shadow:2px 0 4px rgba(110,80,50,.35),inset 0 0 0 1px rgba(170,70,100,.25),inset 0 2px 3px rgba(255,255,255,.4)}
+.spine:hover,.spine[aria-pressed="true"]{transform:translateY(-9px)}
+.spine[aria-pressed="true"]{outline:2px solid var(--pink);outline-offset:2px}
+.spine .t{writing-mode:vertical-rl;font:600 13px/1 var(--serif);letter-spacing:.03em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-height:0;padding:7px 3px;background:rgba(255,250,240,.72);border:1px solid #c9a24d;border-radius:2px;color:#7a2c4a}
+.spine .m{font-size:12px;line-height:1;color:#b08030}
+.rib{position:absolute;top:5px;right:4px;width:6px;height:26px;background:linear-gradient(#f3d58c,#b98f3f);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%)}
+.tas{position:absolute;top:6px;left:4px;width:2px;height:17px;background:#ff1493}
+.tas::after{content:"";position:absolute;top:14px;left:-4px;width:10px;height:14px;border-radius:2px 2px 5px 5px;background:repeating-linear-gradient(90deg,#ff1493 0 2px,#ff69b4 2px 4px)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;border-top:2px solid var(--gold)}
+#panel{flex:1;display:flex;flex-direction:column;font:500 17px/1.35 var(--serif)}
+.tagline{font:700 11px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+.tagline b{color:var(--pink)}
+#panel h2{font:700 28px/1.1 var(--serif);margin:2px 0 0}
+.author{font-style:italic;font-weight:600;color:var(--pink);font-size:19px}
+.stars{color:var(--pink);letter-spacing:3px;margin:8px 0;font-size:18px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.stat{background:#fff6fa;border:1px solid var(--pink-lt);border-radius:12px;padding:9px 11px}
+.stat b{display:block;font:700 22px/1.15 var(--font);color:#111}
+.stat span{font:400 12px var(--font);color:#111}
+.note{border-left:3px solid var(--pink);padding-left:10px;font-style:italic;font-size:18px}
+.facts{margin-top:auto;padding-top:10px;border-top:1px solid var(--pink-mid)}
+.facts div{display:flex;justify-content:space-between;gap:8px;padding:3px 0;align-items:baseline}
+.facts span:first-child{font:700 12px var(--font);color:var(--green)}
+.facts span:last-child{font-style:italic;font-weight:600;color:#111;text-align:right}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--green);font-weight:700}
+.form{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+input,select{font:inherit;color:inherit;border:1px solid var(--pink-mid);background:#fff;border-radius:12px;padding:8px 10px;min-width:0;flex:1 1 120px}
+.btn{font:inherit;border:0;border-radius:999px;padding:9px 18px;font-weight:700;cursor:pointer;background:var(--pink);color:#fff}
+.btn.alt{background:var(--green-soft);color:var(--green)}
+@media (prefers-reduced-motion:reduce){.spine{transition:none}}
+.addrow{margin-top:14px}
+.addbtn{padding:11px 28px;font-size:14px}
+dialog{border:2px solid var(--pink);border-radius:22px;padding:22px;width:min(400px,92vw);color:var(--ink);font:400 14px var(--font)}
+dialog::backdrop{background:rgba(18,53,36,.35)}
+dialog h3{font:700 26px var(--serif);margin:0 0 10px}
+dialog label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);margin-bottom:8px}
+dialog input,dialog select{flex:none;width:100%}
+dialog .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+dialog .chk{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+dialog .chk input{width:auto}
+dialog .acts{display:flex;gap:8px;margin-top:6px}
+.filters{margin-top:12px}
+.filters .chip b{font-weight:600;opacity:.7;margin-left:3px}
+.spine.wish{opacity:.5;filter:saturate(.7)}
+.spine.wish:hover,.spine.wish[aria-pressed="true"]{opacity:.85}
+.spine.fic .t{color:#123524}
+</style></head>
+<body><main>
+<div class="layout">
+<section class="card">
+  <span class="lbl">Every book I own</span>
+  <div class="top">
+    <div><h1>my <em>library</em></h1><div class="meta" id="meta"></div></div>
+    <div class="chips" id="sorts" role="group" aria-label="Sort shelf"></div>
+  </div>
+  <div class="chips filters" id="filters" role="group" aria-label="Show"></div>
+  <div class="cab"><svg class="ps t l" width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><path d="M22.0 5.0 L24.8 5.4 L27.5 6.2 L30.0 7.5 L32.2 9.2 L34.0 11.2 L35.5 13.4 L36.6 15.8 L37.3 18.4 L37.5 21.0 L37.3 23.6 L36.7 26.1 L35.6 28.4 L34.2 30.5 L32.5 32.3 L30.6 33.8 L28.4 34.9 L26.1 35.7 L23.8 36.0 L21.4 35.9 L19.1 35.5 L17.0 34.7 L15.0 33.5 L13.3 32.1 L11.9 30.4 L10.8 28.5 L10.0 26.5 L9.6 24.4 L9.5 22.3 L9.8 20.2 L10.4 18.2 L11.4 16.4 L12.6 14.8 L14.0 13.5 L15.6 12.4 L17.4 11.6 L19.2 11.2 L21.1 11.0 L22.9 11.2 L24.7 11.6 L26.3 12.4 L27.8 13.3 L29.0 14.5 L30.0 15.9 L30.8 17.4 L31.3 19.0 L31.5 20.6 L31.4 22.2 L31.1 23.7 L30.5 25.2 L29.7 26.5 L28.8 27.6 L27.6 28.5 L26.4 29.2 L25.1 29.7 L23.7 30.0 L22.3 30.0 L21.0 29.8 L19.8 29.3 L18.7 28.7 L17.7 27.9 L16.9 27.0 L16.2 26.0 L15.8 24.9 L15.6 23.8 L15.5 22.7 L15.6 21.6 L16.0 20.6 L16.4 19.7 L17.0 18.8 L17.7 18.2 L18.5 17.6 L19.4 17.3 L20.3 17.1 L21.2 17.0 L22.0 17.1 L22.8 17.3 L23.5 17.7 L24.1 18.1 L24.7 18.7 L25.1 19.2 L25.3 19.9 L25.5 20.5 L25.5 21.2 L25.5 21.8 L25.3 22.3 L25.0 22.8 L24.7 23.3 L24.3 23.6 L23.9 23.9 L23.5 24.0" fill="none" stroke="#d1c1a3" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.0 5.0 L24.8 5.4 L27.5 6.2 L30.0 7.5 L32.2 9.2 L34.0 11.2 L35.5 13.4 L36.6 15.8 L37.3 18.4 L37.5 21.0 L37.3 23.6 L36.7 26.1 L35.6 28.4 L34.2 30.5 L32.5 32.3 L30.6 33.8 L28.4 34.9 L26.1 35.7 L23.8 36.0 L21.4 35.9 L19.1 35.5 L17.0 34.7 L15.0 33.5 L13.3 32.1 L11.9 30.4 L10.8 28.5 L10.0 26.5 L9.6 24.4 L9.5 22.3 L9.8 20.2 L10.4 18.2 L11.4 16.4 L12.6 14.8 L14.0 13.5 L15.6 12.4 L17.4 11.6 L19.2 11.2 L21.1 11.0 L22.9 11.2 L24.7 11.6 L26.3 12.4 L27.8 13.3 L29.0 14.5 L30.0 15.9 L30.8 17.4 L31.3 19.0 L31.5 20.6 L31.4 22.2 L31.1 23.7 L30.5 25.2 L29.7 26.5 L28.8 27.6 L27.6 28.5 L26.4 29.2 L25.1 29.7 L23.7 30.0 L22.3 30.0 L21.0 29.8 L19.8 29.3 L18.7 28.7 L17.7 27.9 L16.9 27.0 L16.2 26.0 L15.8 24.9 L15.6 23.8 L15.5 22.7 L15.6 21.6 L16.0 20.6 L16.4 19.7 L17.0 18.8 L17.7 18.2 L18.5 17.6 L19.4 17.3 L20.3 17.1 L21.2 17.0 L22.0 17.1 L22.8 17.3 L23.5 17.7 L24.1 18.1 L24.7 18.7 L25.1 19.2 L25.3 19.9 L25.5 20.5 L25.5 21.2 L25.5 21.8 L25.3 22.3 L25.0 22.8 L24.7 23.3 L24.3 23.6 L23.9 23.9 L23.5 24.0" fill="none" stroke="#fffaf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(-1 -1)"/></svg><svg class="ps t r" width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><path d="M22.0 5.0 L24.8 5.4 L27.5 6.2 L30.0 7.5 L32.2 9.2 L34.0 11.2 L35.5 13.4 L36.6 15.8 L37.3 18.4 L37.5 21.0 L37.3 23.6 L36.7 26.1 L35.6 28.4 L34.2 30.5 L32.5 32.3 L30.6 33.8 L28.4 34.9 L26.1 35.7 L23.8 36.0 L21.4 35.9 L19.1 35.5 L17.0 34.7 L15.0 33.5 L13.3 32.1 L11.9 30.4 L10.8 28.5 L10.0 26.5 L9.6 24.4 L9.5 22.3 L9.8 20.2 L10.4 18.2 L11.4 16.4 L12.6 14.8 L14.0 13.5 L15.6 12.4 L17.4 11.6 L19.2 11.2 L21.1 11.0 L22.9 11.2 L24.7 11.6 L26.3 12.4 L27.8 13.3 L29.0 14.5 L30.0 15.9 L30.8 17.4 L31.3 19.0 L31.5 20.6 L31.4 22.2 L31.1 23.7 L30.5 25.2 L29.7 26.5 L28.8 27.6 L27.6 28.5 L26.4 29.2 L25.1 29.7 L23.7 30.0 L22.3 30.0 L21.0 29.8 L19.8 29.3 L18.7 28.7 L17.7 27.9 L16.9 27.0 L16.2 26.0 L15.8 24.9 L15.6 23.8 L15.5 22.7 L15.6 21.6 L16.0 20.6 L16.4 19.7 L17.0 18.8 L17.7 18.2 L18.5 17.6 L19.4 17.3 L20.3 17.1 L21.2 17.0 L22.0 17.1 L22.8 17.3 L23.5 17.7 L24.1 18.1 L24.7 18.7 L25.1 19.2 L25.3 19.9 L25.5 20.5 L25.5 21.2 L25.5 21.8 L25.3 22.3 L25.0 22.8 L24.7 23.3 L24.3 23.6 L23.9 23.9 L23.5 24.0" fill="none" stroke="#d1c1a3" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.0 5.0 L24.8 5.4 L27.5 6.2 L30.0 7.5 L32.2 9.2 L34.0 11.2 L35.5 13.4 L36.6 15.8 L37.3 18.4 L37.5 21.0 L37.3 23.6 L36.7 26.1 L35.6 28.4 L34.2 30.5 L32.5 32.3 L30.6 33.8 L28.4 34.9 L26.1 35.7 L23.8 36.0 L21.4 35.9 L19.1 35.5 L17.0 34.7 L15.0 33.5 L13.3 32.1 L11.9 30.4 L10.8 28.5 L10.0 26.5 L9.6 24.4 L9.5 22.3 L9.8 20.2 L10.4 18.2 L11.4 16.4 L12.6 14.8 L14.0 13.5 L15.6 12.4 L17.4 11.6 L19.2 11.2 L21.1 11.0 L22.9 11.2 L24.7 11.6 L26.3 12.4 L27.8 13.3 L29.0 14.5 L30.0 15.9 L30.8 17.4 L31.3 19.0 L31.5 20.6 L31.4 22.2 L31.1 23.7 L30.5 25.2 L29.7 26.5 L28.8 27.6 L27.6 28.5 L26.4 29.2 L25.1 29.7 L23.7 30.0 L22.3 30.0 L21.0 29.8 L19.8 29.3 L18.7 28.7 L17.7 27.9 L16.9 27.0 L16.2 26.0 L15.8 24.9 L15.6 23.8 L15.5 22.7 L15.6 21.6 L16.0 20.6 L16.4 19.7 L17.0 18.8 L17.7 18.2 L18.5 17.6 L19.4 17.3 L20.3 17.1 L21.2 17.0 L22.0 17.1 L22.8 17.3 L23.5 17.7 L24.1 18.1 L24.7 18.7 L25.1 19.2 L25.3 19.9 L25.5 20.5 L25.5 21.2 L25.5 21.8 L25.3 22.3 L25.0 22.8 L24.7 23.3 L24.3 23.6 L23.9 23.9 L23.5 24.0" fill="none" stroke="#fffaf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(-1 -1)"/></svg><svg class="ps b l" width="44" height="76" viewBox="0 0 44 76" aria-hidden="true"><path d="M22 4L22 36 L22.0 36.0 L24.4 36.3 L26.7 37.0 L28.9 38.1 L30.9 39.4 L32.6 41.0 L34.0 42.9 L35.2 44.9 L35.9 47.0 L36.4 49.3 L36.5 51.5 L36.2 53.7 L35.7 55.8 L34.8 57.8 L33.6 59.6 L32.2 61.2 L30.6 62.5 L28.8 63.6 L26.9 64.4 L24.9 64.8 L22.9 65.0 L20.9 64.8 L19.0 64.3 L17.2 63.6 L15.6 62.6 L14.1 61.4 L12.9 60.0 L11.9 58.4 L11.2 56.7 L10.7 55.0 L10.6 53.2 L10.7 51.4 L11.0 49.7 L11.6 48.1 L12.5 46.7 L13.5 45.4 L14.7 44.3 L16.1 43.4 L17.5 42.7 L19.1 42.3 L20.6 42.1 L22.1 42.2 L23.6 42.4 L25.0 42.9 L26.3 43.6 L27.4 44.5 L28.4 45.5 L29.2 46.7 L29.8 47.9 L30.2 49.2 L30.4 50.5 L30.3 51.8 L30.1 53.1 L29.7 54.3 L29.1 55.4 L28.4 56.3 L27.6 57.2 L26.6 57.8 L25.6 58.3 L24.5 58.7 L23.5 58.8 L22.4 58.8 L21.3 58.7 L20.4 58.3 L19.5 57.9 L18.7 57.3 L18.0 56.6 L17.5 55.9 L17.1 55.0 L16.8 54.2 L16.7 53.3 L16.7 52.5 L16.8 51.7 L17.1 50.9 L17.4 50.2 L17.9 49.6 L18.4 49.1 L19.0 48.7 L19.6 48.4 L20.3 48.2 L20.9 48.2 L21.5 48.2 L22.1 48.3 L22.6 48.5 L23.1 48.8 L23.5 49.1 L23.9 49.5 L24.1 49.9 L24.3 50.4 L24.4 50.8 L24.4 51.2" fill="none" stroke="#d1c1a3" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L22 36 L22.0 36.0 L24.4 36.3 L26.7 37.0 L28.9 38.1 L30.9 39.4 L32.6 41.0 L34.0 42.9 L35.2 44.9 L35.9 47.0 L36.4 49.3 L36.5 51.5 L36.2 53.7 L35.7 55.8 L34.8 57.8 L33.6 59.6 L32.2 61.2 L30.6 62.5 L28.8 63.6 L26.9 64.4 L24.9 64.8 L22.9 65.0 L20.9 64.8 L19.0 64.3 L17.2 63.6 L15.6 62.6 L14.1 61.4 L12.9 60.0 L11.9 58.4 L11.2 56.7 L10.7 55.0 L10.6 53.2 L10.7 51.4 L11.0 49.7 L11.6 48.1 L12.5 46.7 L13.5 45.4 L14.7 44.3 L16.1 43.4 L17.5 42.7 L19.1 42.3 L20.6 42.1 L22.1 42.2 L23.6 42.4 L25.0 42.9 L26.3 43.6 L27.4 44.5 L28.4 45.5 L29.2 46.7 L29.8 47.9 L30.2 49.2 L30.4 50.5 L30.3 51.8 L30.1 53.1 L29.7 54.3 L29.1 55.4 L28.4 56.3 L27.6 57.2 L26.6 57.8 L25.6 58.3 L24.5 58.7 L23.5 58.8 L22.4 58.8 L21.3 58.7 L20.4 58.3 L19.5 57.9 L18.7 57.3 L18.0 56.6 L17.5 55.9 L17.1 55.0 L16.8 54.2 L16.7 53.3 L16.7 52.5 L16.8 51.7 L17.1 50.9 L17.4 50.2 L17.9 49.6 L18.4 49.1 L19.0 48.7 L19.6 48.4 L20.3 48.2 L20.9 48.2 L21.5 48.2 L22.1 48.3 L22.6 48.5 L23.1 48.8 L23.5 49.1 L23.9 49.5 L24.1 49.9 L24.3 50.4 L24.4 50.8 L24.4 51.2" fill="none" stroke="#fffaf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(-1 -1)"/></svg><svg class="ps b r" width="44" height="76" viewBox="0 0 44 76" aria-hidden="true"><path d="M22 4L22 36 L22.0 36.0 L24.4 36.3 L26.7 37.0 L28.9 38.1 L30.9 39.4 L32.6 41.0 L34.0 42.9 L35.2 44.9 L35.9 47.0 L36.4 49.3 L36.5 51.5 L36.2 53.7 L35.7 55.8 L34.8 57.8 L33.6 59.6 L32.2 61.2 L30.6 62.5 L28.8 63.6 L26.9 64.4 L24.9 64.8 L22.9 65.0 L20.9 64.8 L19.0 64.3 L17.2 63.6 L15.6 62.6 L14.1 61.4 L12.9 60.0 L11.9 58.4 L11.2 56.7 L10.7 55.0 L10.6 53.2 L10.7 51.4 L11.0 49.7 L11.6 48.1 L12.5 46.7 L13.5 45.4 L14.7 44.3 L16.1 43.4 L17.5 42.7 L19.1 42.3 L20.6 42.1 L22.1 42.2 L23.6 42.4 L25.0 42.9 L26.3 43.6 L27.4 44.5 L28.4 45.5 L29.2 46.7 L29.8 47.9 L30.2 49.2 L30.4 50.5 L30.3 51.8 L30.1 53.1 L29.7 54.3 L29.1 55.4 L28.4 56.3 L27.6 57.2 L26.6 57.8 L25.6 58.3 L24.5 58.7 L23.5 58.8 L22.4 58.8 L21.3 58.7 L20.4 58.3 L19.5 57.9 L18.7 57.3 L18.0 56.6 L17.5 55.9 L17.1 55.0 L16.8 54.2 L16.7 53.3 L16.7 52.5 L16.8 51.7 L17.1 50.9 L17.4 50.2 L17.9 49.6 L18.4 49.1 L19.0 48.7 L19.6 48.4 L20.3 48.2 L20.9 48.2 L21.5 48.2 L22.1 48.3 L22.6 48.5 L23.1 48.8 L23.5 49.1 L23.9 49.5 L24.1 49.9 L24.3 50.4 L24.4 50.8 L24.4 51.2" fill="none" stroke="#d1c1a3" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L22 36 L22.0 36.0 L24.4 36.3 L26.7 37.0 L28.9 38.1 L30.9 39.4 L32.6 41.0 L34.0 42.9 L35.2 44.9 L35.9 47.0 L36.4 49.3 L36.5 51.5 L36.2 53.7 L35.7 55.8 L34.8 57.8 L33.6 59.6 L32.2 61.2 L30.6 62.5 L28.8 63.6 L26.9 64.4 L24.9 64.8 L22.9 65.0 L20.9 64.8 L19.0 64.3 L17.2 63.6 L15.6 62.6 L14.1 61.4 L12.9 60.0 L11.9 58.4 L11.2 56.7 L10.7 55.0 L10.6 53.2 L10.7 51.4 L11.0 49.7 L11.6 48.1 L12.5 46.7 L13.5 45.4 L14.7 44.3 L16.1 43.4 L17.5 42.7 L19.1 42.3 L20.6 42.1 L22.1 42.2 L23.6 42.4 L25.0 42.9 L26.3 43.6 L27.4 44.5 L28.4 45.5 L29.2 46.7 L29.8 47.9 L30.2 49.2 L30.4 50.5 L30.3 51.8 L30.1 53.1 L29.7 54.3 L29.1 55.4 L28.4 56.3 L27.6 57.2 L26.6 57.8 L25.6 58.3 L24.5 58.7 L23.5 58.8 L22.4 58.8 L21.3 58.7 L20.4 58.3 L19.5 57.9 L18.7 57.3 L18.0 56.6 L17.5 55.9 L17.1 55.0 L16.8 54.2 L16.7 53.3 L16.7 52.5 L16.8 51.7 L17.1 50.9 L17.4 50.2 L17.9 49.6 L18.4 49.1 L19.0 48.7 L19.6 48.4 L20.3 48.2 L20.9 48.2 L21.5 48.2 L22.1 48.3 L22.6 48.5 L23.1 48.8 L23.5 49.1 L23.9 49.5 L24.1 49.9 L24.3 50.4 L24.4 50.8 L24.4 51.2" fill="none" stroke="#fffaf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(-1 -1)"/></svg><div class="crown"><svg class="arch" viewBox="0 0 1000 130" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fbf6ea"/><stop offset="1" stop-color="#ecdfc8"/></linearGradient><clipPath id="ac"><path d="M0 130V100Q0 80 22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78Q1000 80 1000 100V130Z"/></clipPath></defs><path d="M0 130V100Q0 80 22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78Q1000 80 1000 100V130Z" fill="url(#cg)"/><g clip-path="url(#ac)"><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 14)" stroke="rgba(140,105,65,.16)" stroke-width="1" stroke-dasharray="230 30 120 50 340 24" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 22)" stroke="rgba(140,105,65,.10)" stroke-width="1" stroke-dasharray="90 40 300 36 160 70" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 40)" stroke="rgba(140,105,65,.20)" stroke-width="1.2" stroke-dasharray="320 26 110 60 200 20" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 52)" stroke="rgba(140,105,65,.12)" stroke-width="1" stroke-dasharray="140 50 260 30 170 44" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 60)" stroke="rgba(140,105,65,.18)" stroke-width="1" stroke-dasharray="260 36 120 64 280 22" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 72)" stroke="rgba(140,105,65,.11)" stroke-width="1" stroke-dasharray="110 40 340 28 150 56" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 84)" stroke="rgba(140,105,65,.17)" stroke-width="1.2" stroke-dasharray="300 30 140 52 220 26" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 96)" stroke="rgba(140,105,65,.10)" stroke-width="1" stroke-dasharray="170 60 260 34 130 48" fill="none" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 108)" stroke="rgba(140,105,65,.15)" stroke-width="1" stroke-dasharray="240 28 180 44 300 24" fill="none" vector-effect="non-scaling-stroke"/></g><path d="M0 130V100Q0 80 22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78Q1000 80 1000 100V130Z" fill="none" stroke="#d6c8ae" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M16 118V102Q16 92 30 91L74 88C142 84 194 78 262 62C334 45 404 24 500 24C596 24 666 45 738 62C806 78 858 84 926 88L970 91Q984 92 984 102V118" fill="none" stroke="#e1d4ba" stroke-width="3" vector-effect="non-scaling-stroke"/><path d="M22 78L72 74C140 70 190 64 256 48C330 30 400 8 500 8C600 8 670 30 744 48C810 64 860 70 928 74L978 78" transform="translate(0 26)" fill="none" stroke="#c9b48a" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="0 8" vector-effect="non-scaling-stroke"/><path d="M34 126V108L78 104C146 100 198 94 266 78C338 61 408 42 500 42C592 42 662 61 734 78C802 94 854 100 922 104L966 108V126" fill="none" stroke="#f8f1e1" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M0 122H1000" stroke="#e3d6bd" stroke-width="9" stroke-dasharray="8 6" fill="none" vector-effect="non-scaling-stroke"/><path d="M0 117.5H1000" stroke="#d6c8ae" stroke-width="1.5" fill="none" vector-effect="non-scaling-stroke"/></svg><svg class="orn" width="150" height="62" viewBox="0 0 150 62" aria-hidden="true"><g transform="translate(15 0)"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M60 50C48 50 40 44 38 36C36 28 42 22 49 24C55 26 55 33 50 34" stroke="#d1c1a3" stroke-width="5"/><path d="M60 50C48 50 40 44 38 36C36 28 42 22 49 24C55 26 55 33 50 34" stroke="#fffaf0" stroke-width="1.6" transform="translate(-1 -1)"/><g transform="translate(120 0) scale(-1 1)"><path d="M60 50C48 50 40 44 38 36C36 28 42 22 49 24C55 26 55 33 50 34" stroke="#d1c1a3" stroke-width="5"/><path d="M60 50C48 50 40 44 38 36C36 28 42 22 49 24C55 26 55 33 50 34" stroke="#fffaf0" stroke-width="1.6" transform="translate(-1 -1)"/></g></g><path d="M60 4C50 14 50 30 60 38C70 30 70 14 60 4Z" fill="#f7efdc" stroke="#d1c1a3" stroke-width="2"/><path d="M60 12V32" stroke="#e1d4ba" stroke-width="1.5"/><path d="M44 52Q60 42 76 52V58H44Z" fill="#efe3cb" stroke="#d1c1a3" stroke-width="1.5"/></g></svg><svg class="cart" width="156" height="64" viewBox="0 0 156 64" aria-hidden="true"><polygon points="22,4 134,4 152,20 152,44 134,60 22,60 4,44 4,20" fill="#f3ead8" stroke="#d1c1a3" stroke-width="2"/><polygon points="26,10 130,10 144,22 144,42 130,54 26,54 12,42 12,22" fill="none" stroke="#e1d4ba" stroke-width="1.6"/><g transform="translate(78 32)"><circle r="14" fill="#efe3cb" stroke="#d1c1a3" stroke-width="1.5"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(0)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(45)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(90)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(135)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(180)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(225)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(270)"/><ellipse cx="0" cy="-9" rx="3.4" ry="6" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1" transform="rotate(315)"/><circle r="3.4" fill="#d1c1a3"/></g><path d="M24 32H48M108 32H132" stroke="#d1c1a3" stroke-width="2" stroke-linecap="round"/></svg><svg class="acan l" width="112" height="58" viewBox="0 0 112 58" aria-hidden="true"><path d="M6 46C30 46 44 38 56 28C66 20 80 15 93 22C103 28 99 40 89 38C81 36 81 29 87 28" fill="none" stroke="#d1c1a3" stroke-width="5" stroke-linecap="round"/><path d="M6 46C30 46 44 38 56 28C66 20 80 15 93 22C103 28 99 40 89 38C81 36 81 29 87 28" fill="none" stroke="#fffaf0" stroke-width="1.5" stroke-linecap="round" transform="translate(-1 -1)"/><ellipse cx="24" cy="40" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(-12 24 40)"/><ellipse cx="44" cy="30" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(-40 44 30)"/><ellipse cx="66" cy="17" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(-20 66 17)"/><ellipse cx="22" cy="50" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(10 22 50)"/></svg><svg class="acan r" width="112" height="58" viewBox="0 0 112 58" aria-hidden="true"><path d="M6 46C30 46 44 38 56 28C66 20 80 15 93 22C103 28 99 40 89 38C81 36 81 29 87 28" fill="none" stroke="#d1c1a3" stroke-width="5" stroke-linecap="round"/><path d="M6 46C30 46 44 38 56 28C66 20 80 15 93 22C103 28 99 40 89 38C81 36 81 29 87 28" fill="none" stroke="#fffaf0" stroke-width="1.5" stroke-linecap="round" transform="translate(-1 -1)"/><ellipse cx="24" cy="40" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(-12 24 40)"/><ellipse cx="44" cy="30" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(-40 44 30)"/><ellipse cx="66" cy="17" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(-20 66 17)"/><ellipse cx="22" cy="50" rx="9" ry="3.8" fill="#f9f3e5" stroke="#d1c1a3" stroke-width="1.3" transform="rotate(10 22 50)"/></svg><svg class="ros l" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="#f3ead8" stroke="#d1c1a3" stroke-width="1.6"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(0 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(45 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(90 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(135 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(180 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(225 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(270 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(315 16 16)"/><circle cx="16" cy="16" r="4" fill="#d1c1a3"/></svg><svg class="ros r" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="#f3ead8" stroke="#d1c1a3" stroke-width="1.6"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(0 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(45 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(90 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(135 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(180 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(225 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(270 16 16)"/><ellipse cx="16" cy="8" rx="3.2" ry="5.6" fill="#fbf6ea" stroke="#d1c1a3" stroke-width="1" transform="rotate(315 16 16)"/><circle cx="16" cy="16" r="4" fill="#d1c1a3"/></svg></div><div id="shelf"></div><div class="base"></div></div>
+  <div class="legend" id="legend"></div>
+  <div class="addrow"><button class="btn addbtn" id="open">add a book</button></div>
+</section>
+<aside class="card side"><span class="lbl">On the spine</span><div id="panel" aria-live="polite"></div></aside>
+</div>
+<dialog id="dlg"><form method="dialog" id="bf">
+<h3>add a book</h3>
+<label>title<input id="ft" required></label>
+<label>author<input id="fa"></label>
+<label>genre<select id="fg"></select></label>
+<div class="two"><label>pages<input id="fp" type="number" min="1"></label>
+<label>rating<select id="fr"><option value="0">not rated</option><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></label></div>
+<div class="two"><label>date started<input id="fs" type="date"></label><label>date finished<input id="ff" type="date"></label></div>
+<label class="chk"><input id="fv" type="checkbox"> favourite</label>
+<div class="acts"><button class="btn" value="save">save to shelf</button><button class="btn alt" value="cancel" formnovalidate>cancel</button></div>
+</form></dialog>
+</main>
+<script>
+const PINKS=['#f7c6d3','#f4b6c8','#f1a7bd','#ee9db6','#f9d3de','#f2b1b0','#e891ad','#f6bcc9','#eeaec1','#f3c1cf'];
+const GLYPHS=['✦','❦','❖','◆','✧','❀','✶','❋'];
+let GENRES=[{name:'drama'},{name:'fantasy'},{name:'romance'}];
+const gi=g=>{g=(g||'').toLowerCase();let i=GENRES.findIndex(x=>x.name===g);if(i<0){GENRES.push({name:g});i=GENRES.length-1}return i};
+const col=g=>PINKS[gi(g)%PINKS.length];
+const EMO=[[/romantasy|fairy|retelling/,'🧚'],[/fantasy|magic|wizard/,'🪄'],[/romance|love/,'💗'],[/drama/,'🎭'],[/myster|detective|whodunit/,'🔍'],[/thrill|suspense|crime/,'🕵️'],[/horror|gothic|scary/,'👻'],[/sci.?fi|science fiction|space/,'🚀'],[/histor/,'🏰'],[/classic/,'📜'],[/contemporary|realistic/,'☕'],[/literary/,'✒️'],[/memoir|biograph/,'🪞'],[/non.?fiction|essay/,'📚'],[/self.?help|wellness|mental|psych/,'🌱'],[/poet|verse/,'🌹'],[/young adult|^ya$/,'🦋'],[/child|kid|picture/,'🧸'],[/comed|humou?r|funny|satire/,'😂'],[/adventure|travel/,'🗺️'],[/dystopi|post.?apoc/,'🌆'],[/paranormal|supernatural|ghost/,'🌙'],[/myth|legend|folklore/,'⚡'],[/graphic|comic|manga/,'💥'],[/cozy|cosy/,'🫖'],[/dark academia/,'🕯️'],[/\bwar\b|military/,'🕊️'],[/western/,'🤠'],[/sport/,'⚽'],[/cook|food|recipe/,'🍳'],[/business|career|money|financ/,'💼'],[/relig|spirit|faith/,'🕊️'],[/short stor/,'✂️'],[/philosoph/,'🏛️'],[/science|nature/,'🔬'],[/\bart\b|design|fashion/,'🎨'],[/music/,'🎵']];
+const emoji=g=>{const n=(g||'').toLowerCase();for(const [r,e] of EMO)if(r.test(n))return e;return '📖'};
+const mark=g=>GENRES[gi(g)].icon||emoji(g);
+function setGenres(l){GENRES=l.map(x=>({name:String(x.name).toLowerCase(),icon:x.icon||null})).sort((a,b)=>a.name.localeCompare(b.name))}
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const SAMPLE=[
+{t:'Circe',a:'Madeline Miller',g:'fantasy',p:393,r:5,d:'2026-01-20',n:8,f:1},
+{t:'Jane Eyre',a:'Charlotte Brontë',g:'romance',p:532,r:4,d:'2026-02-14',n:14},
+{t:'The Night Circus',a:'Erin Morgenstern',g:'fantasy',p:387,r:4,d:'2026-03-02',n:4},
+{t:'A Court of Wings and Ruin',a:'Sarah J. Maas',g:'fantasy',p:699,r:4,d:'2026-04-11',n:9},
+{t:'Normal People',a:'Sally Rooney',g:'drama',p:266,r:4,d:'2026-05-01',n:6},
+{t:'Rebecca',a:'Daphne du Maurier',g:'drama',p:449,r:5,d:'2026-05-22',n:10,f:1},
+{t:'Beach Read',a:'Emily Henry',g:'romance',p:361,r:3,d:'2026-06-09',n:5},
+{t:'Babel',a:'R.F. Kuang',g:'fantasy',p:545,r:5,d:'2026-07-04',n:12,f:1},
+{t:'The Secret History',a:'Donna Tartt',g:'drama',p:559,r:5,d:'2026-08-15',n:13},
+{t:'Gone Girl',a:'Gillian Flynn',g:'drama',p:419,r:3,d:'2026-09-03',n:7},
+{t:'Piranesi',a:'Susanna Clarke',g:'fantasy',p:272,r:5,d:'2026-11-03',n:5,f:1,note:'A quiet, luminous puzzle box. Read it slowly.'},
+{t:'The Song of Achilles',a:'Madeline Miller',g:'romance',p:378,r:5,d:'2026-10-02',n:6,f:1},
+{t:'Pride and Prejudice',a:'Jane Austen',g:'romance',p:279,r:4,d:'2026-10-20',n:5}];
+const Q=new URLSearchParams(location.search),KEY=Q.get('key')||'',DEMO=Q.has('demo');
+let live=false,base=[],mine=[],all=[],books=[],sort='title',sel=null,filt='owned';
+/* filters: 'owned' = everything except the wishlist */
+const FILTERS=[['owned','all I own',b=>b.s!=='wishlist'],['read','read',b=>b.s==='read'],['to read','want to read',b=>b.s==='to read'],['reading','reading',b=>b.s==='reading'],['fav','favourites',b=>b.f&&b.s!=='wishlist'],['wishlist','wishlist',b=>b.s==='wishlist']];
+const applyFilter=()=>{const f=FILTERS.find(x=>x[0]===filt);books=all.filter(f[2]);if(sel&&!books.includes(sel))sel=null};
+const FIC=['#1f6b47','#185a3e','#2a7d58','#226f4c'];
+const SORTS={'title':(a,b)=>a.t.localeCompare(b.t),'date read':(a,b)=>(a.d||'').localeCompare(b.d||''),'rating':(a,b)=>b.r-a.r||(a.d||'').localeCompare(b.d||''),'genre':(a,b)=>a.g.localeCompare(b.g),'length':(a,b)=>(a.p||0)-(b.p||0)};
+const ink=hex=>{const n=parseInt(hex.slice(1),16),l=.299*(n>>16)+.587*(n>>8&255)+.114*(n&255);return l>160?'#3a2418':'#f6e7c1'};
+const sw=b=>Math.max(28,Math.min(50,18+(b.p||320)/26));
+const hash=s=>[...s].reduce((a,c)=>a+c.charCodeAt(0),0);
+const fd=d=>new Date(d+'T00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+Object.keys(SORTS).forEach(s=>{const b=document.createElement('button');b.className='chip';b.textContent=s;b.setAttribute('aria-pressed',s===sort);
+ b.onclick=()=>{sort=s;document.querySelectorAll('#sorts .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));shelf()};$('#sorts').append(b)});
+function spine(b){
+  const fic=b.k==='fanfiction',h=Math.max(132,Math.min(200,100+(b.p||320)/6)),c=fic?FIC[hash(b.t)%FIC.length]:col(b.g);
+  const e=document.createElement('button');e.className='spine'+(b.s==='wishlist'?' wish':'')+(fic?' fic':'');e.style.cssText='width:'+sw(b)+'px;height:'+h+'px;background-color:'+c;
+  e.setAttribute('aria-label',b.t+' by '+b.a+(b.s?', '+b.s:''));e.setAttribute('aria-pressed',sel===b);
+  const t=document.createElement('span');t.className='t';t.textContent=b.t;
+  const m=document.createElement('span');m.className='m';m.textContent=mark(b.g);
+  e.append(t,m);
+  const tz=document.createElement('span');tz.className='tas';e.append(tz);
+  if(b.f){const r=document.createElement('span');r.className='rib';e.append(r)}
+  e.onclick=()=>{sel=b;shelf();panel()};return e;
+}
+function shelf(){
+  const list=[...books].sort(SORTS[sort]),box=$('#shelf'),W=box.clientWidth-40||560;box.innerHTML='';
+  let row,used=0,rows=[],lim=W;
+  const newRow=()=>{row=document.createElement('div');row.className='row';const bd=document.createElement('div');bd.className='board';box.append(row,bd);rows.push(row);used=0};
+  newRow();
+  list.forEach(b=>{const e=spine(b),w=sw(b)+3;if(used+w>lim&&used>0){newRow()}row.append(e);used+=w});
+    while(box.querySelectorAll('.row').length<2){row=document.createElement('div');row.className='row';row.style.minHeight='96px';const bd=document.createElement('div');bd.className='board';box.append(row,bd)}
+  if(!list.length)row.innerHTML='<p style="padding:30px 8px;color:var(--muted)">No books here yet.</p>';
+  meta();legend();
+}
+function meta(){
+  const n=books.length,pg=books.reduce((a,b)=>a+(b.p||0),0),avg=n?(books.reduce((a,b)=>a+b.r,0)/n).toFixed(1):'–';
+  const rated=books.filter(b=>b.r),ra=rated.length?(rated.reduce((a,b)=>a+b.r,0)/rated.length).toFixed(1):'–',own=all.filter(b=>b.s!=='wishlist'),rd=own.filter(b=>b.s==='read').length;
+  $('#meta').innerHTML='<b>'+n+'</b> '+(n===1?'book':'books')+' · <b>'+pg.toLocaleString()+'</b> pages · <b style="color:var(--pink)">★ '+ra+'</b> average · <b>'+rd+'</b> of <b>'+own.length+'</b> owned books read';
+}
+function legend(){
+  const c={};books.forEach(b=>c[b.g]=(c[b.g]||0)+1);
+  $('#legend').innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([g,n])=>'<span><i style="background:'+col(g)+'"></i>'+mark(g)+' '+g+' <b>'+n+'</b></span>').join('');
+}
+function panel(){
+  const p=$('#panel');
+  if(!books.length){p.innerHTML='<div class="note">Nothing in this filter yet.</div>';return}
+  const b=sel&&books.includes(sel)?sel:books[books.length-1];
+  const withP=books.filter(x=>x.p),withN=books.filter(x=>x.n);
+  const long=withP.sort((a,b)=>b.p-a.p)[0],fast=[...withN].sort((a,b)=>a.n-b.n)[0];
+  const gc={};books.forEach(x=>gc[x.g]=(gc[x.g]||0)+1);const top=Object.entries(gc).sort((a,b)=>b[1]-a[1])[0][0];
+  const dash='—';
+  p.innerHTML='<div class="tagline">'+mark(b.g)+' '+esc(b.g)+(b.s?' · '+esc(b.s==='to read'?'want to read':b.s):'')+(b.f?' · <b>favourite</b>':'')+'</div><h2>'+esc(b.t)+'</h2><div class="author">'+esc(b.a)+'</div>'
+  +(b.r?'<div class="stars" aria-label="'+b.r+' out of 5">'+'★'.repeat(b.r)+'<span style="opacity:.25">'+'★'.repeat(5-b.r)+'</span></div>':'<div class="stars" style="opacity:.5;font-size:14px;letter-spacing:0">not rated yet</div>')
+  +'<div class="stats"><div class="stat"><b>'+(b.p||dash)+'</b><span>pages</span></div><div class="stat"><b>'+(b.d?fd(b.d):dash)+'</b><span>finished</span></div><div class="stat"><b>'+(b.n?b.n+' days':dash)+'</b><span>to read</span></div><div class="stat"><b>'+(b.p&&b.n?Math.round(b.p/b.n):dash)+'</b><span>pages / day</span></div></div>'
+  +'<div class="note">'+esc(b.note||'Tap a spine to see its details.')+'</div>'
+  +'<div class="facts"><div><span>Longest</span><span>'+esc(long?long.t:dash)+'</span></div><div><span>Fastest read</span><span>'+esc(fast?fast.t:dash)+'</span></div><div><span>Top genre</span><span>'+esc(top)+'</span></div></div>';
+}
+const dlg=$('#dlg');
+$('#open').onclick=()=>{$('#fg').innerHTML='';GENRES.forEach(g=>$('#fg').append(new Option(mark(g.name)+' '+g.name,g.name)));$('#ff').value=new Date().toISOString().slice(0,10);dlg.showModal()};
+$('#bf').addEventListener('submit',e=>{
+  if(e.submitter&&e.submitter.value!=='save')return;
+  const t=$('#ft').value.trim();if(!t)return;
+  const fs=$('#fs').value,ff=$('#ff').value,r=+$('#fr').value,n=fs&&ff?Math.max(1,Math.round((new Date(ff)-new Date(fs))/864e5)):null;
+  const b={t,a:$('#fa').value.trim()||'Unknown',g:$('#fg').value,p:+$('#fp').value||null,r,d:ff||null,n,f:$('#fv').checked||r>=5};
+  mine.push(b);store.set('mine',mine);all=[...base,...mine];applyFilter();sel=b;$('#bf').reset();shelf();panel();
+});
+function filters(){$('#filters').innerHTML='';FILTERS.forEach(([k,l,fn])=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',k===filt);b.innerHTML=l+'<b>'+all.filter(fn).length+'</b>';
+  b.onclick=()=>{filt=k;applyFilter();filters();shelf();panel()};$('#filters').append(b)})}
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(shelf,150)});
+$('#meta').textContent='loading your shelf…';
+(async()=>{
+  let msg='';
+  if(DEMO){base=SAMPLE.map((b,i)=>({...b,s:i%4===3?'to read':i%5===4?'wishlist':'read'}));mine=store.get('mine',[]);all=[...base,...mine];applyFilter()}   // ?demo shows the sample shelf
+  else try{
+    const qs=new URLSearchParams({key:KEY,scope:'all'});
+    const r=await fetch('/api/books?'+qs);const j=await r.json().catch(()=>({}));
+    if(r.status===401)msg='This shelf is private. Open it from your Notion embed link.';
+    else if(!r.ok)msg='Couldn’t reach Notion: '+(j.error||r.status);
+    else if(Array.isArray(j.books)){base=j.books;live=true;if(Array.isArray(j.genres)&&j.genres.length)setGenres(j.genres);all=base;applyFilter()}
+  }catch(e){msg='Couldn’t load your shelf. Try refreshing.'}
+  if(!DEMO)$('.addrow').hidden=true;   // add books in Notion; the shelf updates within ~5 minutes
+  filters();shelf();panel();
+  if(msg)$('#meta').textContent=msg;
+})();
+</script>
+</body></html>
