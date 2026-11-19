@@ -272,7 +272,7 @@ function stand(){
   if([...sel.options].some(o=>o.value===cur))sel.value=cur;
   units();
 }
-function units(){const b=S.books.find(x=>x.id===$('#lbook').value),u=U(b);$('#lpages').placeholder=u.many;$('#lpages').setAttribute('aria-label',u.many+' read');$('#logf').classList.toggle('fic',isFic(b))}
+function units(){const b=S.books.find(x=>x.id===$('#lbook').value),u=U(b),f=isFic(b);$('#lpages').placeholder=f?'ended on ch.':u.many;$('#lpages').setAttribute('aria-label',f?'Chapter you ended on':u.many+' read');$('#logf').classList.toggle('fic',isFic(b))}
 function quote(){
   const pool=notes.length?notes:CLASSICS,n=pool[qi%pool.length],fic=n.k==='fic';
   $('#quote').classList.toggle('fic',fic);$('#qt').textContent=n.q;
@@ -309,7 +309,7 @@ const iso=d=>{const z=-d.getTimezoneOffset(),p=n=>String(Math.floor(Math.abs(n))
 async function logIt(id,n,mins){
   const b=S.books.find(x=>x.id===id);if(!b||!(n>0))return;const u=U(b);
   if(live){
-    try{const end=new Date(),r=await api('/api/sessions'+(isFic(b)?'?hub=fic':''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:b.t,bookId:b.id,start:iso(new Date(end-mins*60000)),end:iso(end),pages:n})});
+    try{const end=new Date(),r=await api('/api/sessions'+(isFic(b)?'?hub=fic':''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:b.t,bookId:b.id,start:iso(new Date(end-mins*60000)),end:iso(end),pages:n,position:b.p?Math.min(b.p,b.c+n):b.c+n})});
       const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('error '+r.status));note(isFic(b)?'Saved to your Notion fic tracker.':'Saved to your Notion reading tracker.')}
     catch(e){note("Couldn't save to Notion: "+e.message+'. Nothing was changed.');return}
   }
@@ -320,9 +320,16 @@ async function logIt(id,n,mins){
   save();all();
 }
 $('#lbook').addEventListener('change',units);
-$('#logf').addEventListener('submit',e=>{e.preventDefault();const b=S.books.find(x=>x.id===$('#lbook').value),p=+$('#lpages').value,m=+$('#lmins').value||0;
-  if(!(p>0)){note('Add how many '+U(b).many+' you read.');$('#lpages').focus();return}
-  logIt($('#lbook').value,p,m);$('#lpages').value='';$('#lmins').value=''});
+/* Fics: you type the chapter you ended on; the chapters read are worked out from where you were. */
+$('#logf').addEventListener('submit',e=>{e.preventDefault();const b=S.books.find(x=>x.id===$('#lbook').value),v=+$('#lpages').value,m=+$('#lmins').value||0;
+  if(!b)return;
+  if(isFic(b)){
+    if(!(v>0)){note('Add the chapter you ended on.');$('#lpages').focus();return}
+    if(b.p&&v>b.p){note(b.t+' only has '+b.p+' chapters.');$('#lpages').focus();return}
+    if(v<=b.c){note('You were already on chapter '+b.c+'. Enter the chapter you ended on this time.');$('#lpages').focus();return}
+    logIt(b.id,v-b.c,m)}
+  else{if(!(v>0)){note('Add how many pages you read.');$('#lpages').focus();return}logIt(b.id,v,m)}
+  $('#lpages').value='';$('#lmins').value=''});
 $('#quote').onclick=()=>{qi++;quote()};
 $('#quote').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();qi++;quote()}};
 const setGoal=v=>{S.goal=Math.max(5,Math.min(500,v));store.set('cr-goal',S.goal);side()};
