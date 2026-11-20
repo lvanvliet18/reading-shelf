@@ -149,6 +149,7 @@ input[type=range]{width:100%;accent-color:var(--pink)}
         <path d="M100 378 A110 12 0 0 0 320 378" fill="none" stroke="#7a5612" stroke-opacity=".5" stroke-width="1.5"/>
         <path d="M100 382 A110 12 0 0 0 320 382" fill="none" stroke="#fff3c4" stroke-opacity=".55" stroke-width="1.2"/>
         <ellipse cx="210" cy="360" rx="110" ry="12" fill="url(#goldT)"/><ellipse cx="210" cy="360" rx="104" ry="10" fill="none" stroke="#fff6cf" stroke-opacity=".6" stroke-width="1.2"/><ellipse cx="210" cy="361" rx="66" ry="8" fill="rgba(90,60,20,.25)"/>
+        <g id="poolBack"></g>
         <g id="candle">
           <ellipse cx="210" cy="360" rx="60" ry="8" fill="url(#wax)"/><rect id="body" x="150" y="70" width="120" height="290" fill="url(#wax)"/>
           <g id="ctop"></g>
@@ -162,6 +163,7 @@ input[type=range]{width:100%;accent-color:var(--pink)}
           </g>
         </g>
         
+        <g id="poolFront"></g>
       </svg>
     </div>
 
@@ -191,13 +193,6 @@ input[type=range]{width:100%;accent-color:var(--pink)}
   </div>
 </section>
 
-<section class="card">
-  <span class="lbl">Soundscape</span>
-  <div class="shead"><h2>set the <em>mood</em></h2><span class="hint">Tap to layer sounds · made live in your browser</span></div>
-  <div class="tiles" id="tiles" role="group" aria-label="Sounds"></div>
-  <div class="vol"><label for="vol">Volume</label><input type="range" id="vol" min="0" max="100" value="70"><output id="volv" for="vol">70%</output></div>
-  <div class="chips" id="presets" role="group" aria-label="Sound presets"></div>
-</section>
 </div>
 
 <aside class="card side">
@@ -298,14 +293,53 @@ const TOP0=100,TOPMAX=290,FOOT=360;
 function paintColor(){const c=WAX[S.color],sv=$('#cv');['--w0','--w1','--w2','--w3','--w4','--w5'].forEach((v,i)=>sv.style.setProperty(v,c[i]));
   document.querySelectorAll('.sw').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===S.color));
   sv.setAttribute('aria-label','A '+S.color+' pillar candle on an antique gold stand')}
+/* Running wax. Rim drips lengthen as it burns; while lit, fresh runs of wax crawl down the side
+   and set; once it burns low, melted wax gathers in a pool on the stand. Runs move on burning time,
+   so they freeze when the candle is snuffed. */
+const HL='#fff',HLO='.5';
+let RUNS=[],nextRun=0,histP=null;
+const rimY=(t,x)=>t+16*Math.sqrt(Math.max(0,1-((x-210)/63)**2))+9;
+const ease=k=>1-Math.pow(1-Math.min(1,Math.max(0,k)),2.4);
+function dripSVG(x,w,ys,ye,clip){
+  const a=Math.max(ys,clip);if(ye-a<1.5)return '';
+  return `<rect x="${f(x-w*.34)}" y="${f(a)}" width="${f(w*.68)}" height="${f(ye-a)}" rx="${f(w*.34)}" style="fill:var(--w5)"/>`+
+  `<ellipse cx="${f(x)}" cy="${f(ye)}" rx="${f(w*.52)}" ry="${f(w*.66)}" style="fill:var(--w5)"/>`+
+  `<path d="M${f(x-w*.13)} ${f(a+1)}V${f(ye-1)}" stroke="${HL}" stroke-opacity="${HLO}" stroke-width="${f(w*.15)}" stroke-linecap="round"/>`+
+  `<ellipse cx="${f(x-w*.17)}" cy="${f(ye-w*.18)}" rx="${f(w*.13)}" ry="${f(w*.2)}" fill="${HL}" opacity="${HLO}"/>`+
+  `<path d="M${f(x+w*.3)} ${f(a+2)}V${f(ye)}" stroke="#000" stroke-opacity=".08" stroke-width="${f(w*.14)}" stroke-linecap="round"/>`;
+}
+function history(p){ // runs from before this page opened, so a half-burnt candle looks lived-in
+  const r=rng(97),out=[];
+  for(let k=1;k<=30;k++){const pk=k/32;if(pk>=p)break;
+    const x=150+r()*120,t=TOP0+pk*(TOPMAX-TOP0);
+    out.push({x,w:7+r()*7,ys:rimY(t,x)-2,L:30+r()*120,born:-1e12,dur:1})}
+  return out}
+function tickRuns(el,t){
+  if(!S.running)return;
+  if(el>=nextRun){const x=152+Math.random()*116;
+    RUNS.push({x,w:7+Math.random()*7,ys:rimY(t,x)-2,L:40+Math.random()*140,born:el,dur:8000+Math.random()*14000});
+    nextRun=el+3000+Math.random()*6000;
+    if(RUNS.length>28)RUNS.shift()}
+}
+function poolSVG(p){
+  const k=Math.max(0,(p-.42)/.58);if(k<=0)return['',''];
+  const rx=62+46*k,ry=8+6*k,cy=FOOT+1,r=rng(41);
+  const back=`<ellipse cx="210" cy="${f(cy+1.6)}" rx="${f(rx)}" ry="${f(ry)}" style="fill:var(--w1)"/><ellipse cx="210" cy="${f(cy)}" rx="${f(rx-2)}" ry="${f(ry-1.2)}" style="fill:var(--w5)"/>`+
+    `<ellipse cx="210" cy="${f(cy-1)}" rx="${f(rx-8)}" ry="${f(ry-3)}" fill="none" stroke="${HL}" stroke-opacity="${HLO}" stroke-width="1.2"/>`;
+  let front=`<path d="M${f(150-9*k)} ${f(cy+.5)}Q150 ${f(cy-11*k)} ${f(157)} ${f(cy-13*k)}L263 ${f(cy-13*k)}Q270 ${f(cy-11*k)} ${f(270+9*k)} ${f(cy+.5)}Z" style="fill:var(--w5)"/>`+
+    `<path d="M${f(154)} ${f(cy-11*k)}Q210 ${f(cy-15*k)} 266 ${f(cy-11*k)}" stroke="${HL}" stroke-opacity="${HLO}" stroke-width="1.4" fill="none"/>`;
+  for(let i=0;i<9;i++){const ang=Math.PI*(.12+.76*i/8),x=210-Math.cos(ang)*(rx-6),y=cy+Math.sin(ang)*(ry-2);
+    front+=`<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f((5+r()*7)*k+2)}" ry="${f((2+r()*2.5)*k+1.5)}" style="fill:var(--w5)"/>`}
+  if(k>.75){const kk=(k-.75)/.25;[[176,9,16],[238,8,24],[205,7,10]].forEach(([x,w,l])=>front+=dripSVG(x,w,cy+ry-4,cy+ry-4+l*kk,0))}
+  return[back,front]}
 function drawCandle(p){
-  const t=TOP0+p*(TOPMAX-TOP0),c=WAX[S.color];
+  const t=TOP0+p*(TOPMAX-TOP0),el=elapsed();
+  if(histP===null)histP=p;
+  tickRuns(el,t);
   $('#body').setAttribute('y',t);$('#body').setAttribute('height',FOOT-t);
   let o=`<path d="M147 ${t}A63 16 0 0 0 273 ${t}L273 ${t+12}A63 16 0 0 1 147 ${t+12}Z" fill="url(#lipG)"/>`;
-  DR.forEach(([x,w,l])=>{const y0=t+16*Math.sqrt(Math.max(0,1-((x-210)/63)**2))+9,L=Math.min(FOOT-y0-6,l*(.75+p*.9));
-    o+=`<rect x="${f(x-w/2)}" y="${t+4}" width="${w}" height="${f(y0-t-4+L)}" rx="${w/2}" style="fill:var(--w5)"/><circle cx="${x}" cy="${f(y0+L)}" r="${f(w*.6)}" style="fill:var(--w5)"/>
-    <path d="M${f(x-w*.18)} ${f(y0)}V${f(y0+L-1)}" stroke="#fff" stroke-opacity=".5" stroke-width="${f(w*.2)}" stroke-linecap="round"/>
-    <path d="M${f(x+w*.4)} ${f(y0+2)}V${f(y0+L)}" stroke="#000" stroke-opacity=".07" stroke-width="${f(w*.2)}" stroke-linecap="round"/>`});
+  [...history(histP),...RUNS].forEach(d=>{const ye=Math.min(FOOT-3,d.ys+d.L*ease((el-d.born)/d.dur));o+=dripSVG(d.x,d.w,d.ys,ye,rimY(t,d.x)-8)});
+  DR.forEach(([x,w,l])=>{const y0=rimY(t,x),L=Math.min(FOOT-y0-6,l*(.75+p*.9));o+=dripSVG(x,w*1.25,t+4,y0+L,t+4)});
   o+=`<ellipse cx="210" cy="${t}" rx="63" ry="16" style="fill:var(--w3)"/>
   <ellipse cx="210" cy="${t-1}" rx="59" ry="13.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
   <ellipse cx="210" cy="${t+1}" rx="47" ry="11" style="fill:var(--w1)" opacity=".75"/>
@@ -315,6 +349,7 @@ function drawCandle(p){
   <path d="M210.6 ${t-9}q.6 -2.4 .4 -4" stroke="#1e130e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
   <circle id="ember" cx="211" cy="${t-12}" r="1.8" fill="#ff7a3a" opacity="${S.running?1:0}"/>`;
   $('#ctop').innerHTML=o;
+  const [pb,pf]=poolSVG(p);$('#poolBack').innerHTML=pb;$('#poolFront').innerHTML=pf;
   $('#flamePos').setAttribute('transform','translate(211 '+(t-12)+')');
   $('#smokeWrap').setAttribute('transform','translate(0 '+(t-TOP0)+')');
   $('#glow').setAttribute('cy',t-40);
@@ -344,17 +379,18 @@ function render(){
   drawCandle(prog());
   document.title=S.running?$('#clock').textContent+' · reading candle':'reading candle';
 }
-let iv=null;
-function loop(on){clearInterval(iv);iv=on?setInterval(()=>{if(S.dur&&elapsed()>=total()){burnout();return}render()},250):null}
-function light(){if(S.dur&&elapsed()>=total())return;S.running=true;S.startedAt=Date.now();save();render();lit(true);loop(true);holdAwake(true)}
+let iv=null,raf=0;
+function frame(){if(!S.running){raf=0;return}drawCandle(prog());raf=requestAnimationFrame(frame)}
+function loop(on){clearInterval(iv);iv=on?setInterval(()=>{if(S.dur&&elapsed()>=total()){burnout();return}render()},250):null;cancelAnimationFrame(raf);raf=on?requestAnimationFrame(frame):0}
+function light(){if(S.dur&&elapsed()>=total())return;S.running=true;S.startedAt=Date.now();nextRun=elapsed()+1200;save();render();lit(true);loop(true);holdAwake(true)}
 function pause(){S.before=elapsed();S.running=false;save();render();lit(false);puff();loop(false);holdAwake(false)}
 function burnout(){S.before=total();S.running=false;save();render();lit(false);puff();loop(false);holdAwake(false);chime();askLog()}
 function finish(){if(S.running)pause();askLog()}
-function resetTimer(){S.before=0;S.running=false;S.startedAt=0;save();$('#logrow').hidden=true;render()}
+function resetTimer(){S.before=0;S.running=false;S.startedAt=0;RUNS=[];histP=null;save();$('#logrow').hidden=true;render()}
 function askLog(){const m=Math.max(1,Math.round(elapsed()/60000));
   $('#logmsg').innerHTML='You read for <b>'+m+' min</b> with <em>'+esc(S.book||'a good book')+'</em>. How many pages?';
   $('#logrow').hidden=false;$('#pages').value='';$('#pages').focus()}
-function chime(){try{const a=ac(),t=a.currentTime;
+function chime(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),t=a.currentTime;
   [[880,0],[1318.5,.18]].forEach(([fr,d])=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=fr;g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(.18,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+2.4);o.connect(g).connect(a.destination);o.start(t+d);o.stop(t+d+2.5)})}catch(e){}}
 $('#go').onclick=()=>S.running?pause():light();
 $('#fin').onclick=finish;$('#reset').onclick=resetTimer;
@@ -384,55 +420,6 @@ $('#skip').onclick=resetTimer;
 $('#book').value=S.book;
 $('#book').addEventListener('input',e=>{S.book=e.target.value.trim();save();render()});
 DURS.forEach(([d,l])=>{const b=document.createElement('button');b.className='chip';b.dataset.d=d;b.textContent=l;b.onclick=()=>{S.dur=d;save();render()};$('#durs').append(b)});
-
-/* ================= soundscape (synthesised live with Web Audio) ================= */
-let AC=null,master=null,WHITE=null,BROWN=null;
-function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=vol()*vol();master.connect(AC.destination);
-  const n=AC.sampleRate*4;WHITE=AC.createBuffer(1,n,AC.sampleRate);BROWN=AC.createBuffer(1,n,AC.sampleRate);const w=WHITE.getChannelData(0),b=BROWN.getChannelData(0);let last=0;
-  for(let i=0;i<n;i++){w[i]=Math.random()*2-1;last=(last+.02*w[i])/1.02;b[i]=last*3.5}}
-  if(AC.state==='suspended')AC.resume();return AC}
-const vol=()=>+$('#vol').value/100;
-function loopSrc(buf){const s=AC.createBufferSource();s.buffer=buf;s.loop=true;s.start(0,Math.random()*3);return s}
-function filt(type,fr,q){const x=AC.createBiquadFilter();x.type=type;x.frequency.value=fr;if(q)x.Q.value=q;return x}
-function gain(v){const g=AC.createGain();g.gain.value=v;return g}
-function chain(...n){for(let i=0;i<n.length-1;i++)n[i].connect(n[i+1]);return n[n.length-1]}
-function burst(out,{f1,f2,type='bandpass',q=1,amp,dec}){const s=AC.createBufferSource();s.buffer=WHITE;const x=filt(type,f1+Math.random()*(f2-f1),q),g=gain(0),t=AC.currentTime;
-  g.gain.setValueAtTime(amp,t);g.gain.exponentialRampToValueAtTime(.0001,t+dec);chain(s,x,g,out);s.start(t,Math.random()*3);s.stop(t+dec+.05)}
-const SOUNDS={
-  rain:{label:'Rain',icon:'<path d="M7 15a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.5 1.5A3.5 3.5 0 0 1 17.5 15z"/><path d="M8 18l-1 2.5M12 18l-1 2.5M16 18l-1 2.5"/>',
-    make(out){const srcs=[loopSrc(WHITE),loopSrc(BROWN)];chain(srcs[0],filt('highpass',700),filt('lowpass',7500),gain(.2),out);chain(srcs[1],filt('lowpass',900),gain(.32),out);
-      return{srcs,timers:[setInterval(()=>{if(Math.random()<.45)burst(out,{f1:2200,f2:6500,q:2.5,amp:.05+Math.random()*.12,dec:.03+Math.random()*.04})},55)]}}},
-  fire:{label:'Fireplace',icon:'<path d="M12 21c-3.5 0-6-2.3-6-5.6 0-3.4 3-5.4 3.6-9.4 2 1.4 3 3.2 3 4.8 1-.6 1.6-1.8 1.8-3 2 1.8 3.6 4.4 3.6 7.6 0 3.3-2.5 5.6-6 5.6z"/><path d="M12 21c-1.5 0-2.6-1-2.6-2.5 0-1.6 1.4-2.5 2.6-4.2 1.2 1.7 2.6 2.6 2.6 4.2 0 1.5-1.1 2.5-2.6 2.5z"/>',
-    make(out){const srcs=[loopSrc(BROWN),loopSrc(WHITE)];chain(srcs[0],filt('lowpass',420),gain(.6),out);chain(srcs[1],filt('bandpass',2600,.6),gain(.012),out);
-      return{srcs,timers:[setInterval(()=>{if(Math.random()<.2){const big=Math.random()<.25;burst(out,{type:'highpass',f1:900,f2:2500,amp:big?.5:.12+Math.random()*.18,dec:big?.08:.015+Math.random()*.03});if(big&&Math.random()<.6)setTimeout(()=>burst(out,{type:'highpass',f1:1500,f2:3000,amp:.15,dec:.02}),40+Math.random()*80)}},60)]}}},
-  cafe:{label:'Café',icon:'<path d="M5 10h11v4.5A4.5 4.5 0 0 1 11.5 19h-2A4.5 4.5 0 0 1 5 14.5z"/><path d="M16 11.5h1.5a2 2 0 0 1 0 4H16"/><path d="M8.5 3.5c-.6.9.6 1.6 0 2.6M12 3.5c-.6.9.6 1.6 0 2.6"/>',
-    make(out){const srcs=[loopSrc(WHITE),loopSrc(WHITE)],g1=gain(.12),g2=gain(.06);chain(srcs[0],filt('bandpass',480,1.4),g1,out);chain(srcs[1],filt('bandpass',1150,2),g2,out);
-      const sway=setInterval(()=>{const t=AC.currentTime;g1.gain.linearRampToValueAtTime(.06+Math.random()*.16,t+.35);g2.gain.linearRampToValueAtTime(.02+Math.random()*.08,t+.3)},380);
-      const clink=setInterval(()=>{if(Math.random()<.22){const t=AC.currentTime,fr=2800+Math.random()*1600;[1,1.51].forEach((m,i)=>{const o=AC.createOscillator(),g=gain(0);o.frequency.value=fr*m;g.gain.setValueAtTime(i?.02:.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+.5);chain(o,g,out);o.start(t);o.stop(t+.55)})}},900);
-      return{srcs,timers:[sway,clink]}}},
-  wind:{label:'Wind',icon:'<path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h7"/>',
-    make(out){const srcs=[loopSrc(WHITE)],bp=filt('bandpass',450,3.5),g=gain(.3);chain(srcs[0],bp,g,out);
-      const sweep=()=>{const t=AC.currentTime;bp.frequency.linearRampToValueAtTime(220+Math.random()*700,t+2.8);g.gain.linearRampToValueAtTime(.15+Math.random()*.4,t+2.8)};sweep();
-      return{srcs,timers:[setInterval(sweep,2900)]}}},
-  ocean:{label:'Ocean',icon:'<path d="M2 9c2 0 2-1.5 4-1.5S8 9 10 9s2-1.5 4-1.5S16 9 18 9s2-1.5 4-1.5"/><path d="M2 13c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M2 17c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/>',
-    make(out){const srcs=[loopSrc(BROWN),loopSrc(WHITE)],g=gain(.1),g2=gain(.01);chain(srcs[0],filt('lowpass',650),g,out);chain(srcs[1],filt('lowpass',2400),g2,out);
-      const wave=()=>{const t=AC.currentTime,pk=.5+Math.random()*.35,up=2.6+Math.random()*1.2;g.gain.linearRampToValueAtTime(pk,t+up);g.gain.linearRampToValueAtTime(.08,t+up+3.8);g2.gain.linearRampToValueAtTime(.09,t+up+.3);g2.gain.linearRampToValueAtTime(.008,t+up+3.5)};wave();
-      return{srcs,timers:[setInterval(wave,7200)]}}}
-};
-const PRESETS=[['Rainy library',['rain','fire']],['Seaside cottage',['ocean','wind']],['Corner café',['cafe','rain']],['Silence',[]]];
-const on={};
-function startSound(k){ac();const out=gain(0);out.connect(master);const h=SOUNDS[k].make(out);out.gain.linearRampToValueAtTime(1,AC.currentTime+1.5);on[k]={out,...h}}
-function stopSound(k){const h=on[k];if(!h)return;delete on[k];const t=AC.currentTime;h.out.gain.cancelScheduledValues(t);h.out.gain.setValueAtTime(h.out.gain.value,t);h.out.gain.linearRampToValueAtTime(0,t+.8);
-  h.timers.forEach(clearInterval);setTimeout(()=>{h.srcs.forEach(s=>{try{s.stop()}catch(e){}});h.out.disconnect()},900)}
-function paintSound(){document.querySelectorAll('.tile').forEach(b=>b.setAttribute('aria-pressed',!!on[b.dataset.k]));
-  const act=Object.keys(on).sort().join();document.querySelectorAll('#presets .chip').forEach(b=>b.setAttribute('aria-pressed',[...b.dataset.k.split(',')].filter(Boolean).sort().join()===act))}
-Object.entries(SOUNDS).forEach(([k,v])=>{const b=document.createElement('button');b.className='tile';b.dataset.k=k;b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+v.icon+'</svg>'+v.label;
-  b.onclick=()=>{on[k]?stopSound(k):startSound(k);paintSound()};$('#tiles').append(b)});
-PRESETS.forEach(([l,ks])=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.dataset.k=ks.join();
-  b.onclick=()=>{Object.keys(on).forEach(k=>{if(!ks.includes(k))stopSound(k)});ks.forEach(k=>{if(!on[k])startSound(k)});paintSound()};$('#presets').append(b)});
-$('#vol').value=store.get('nook-vol',70);$('#volv').textContent=$('#vol').value+'%';
-$('#vol').addEventListener('input',()=>{$('#volv').textContent=$('#vol').value+'%';store.set('nook-vol',+$('#vol').value);if(master)master.gain.setTargetAtTime(vol()*vol(),AC.currentTime,.05)});
-paintSound();
 
 /* ================= log ================= */
 function log(){

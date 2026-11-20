@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>reading ambience</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&display=swap">
+<style>
+/* Small companion to the reading candle: layered ambient sounds, same card frame. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;--serif:"Cormorant Garamond",Georgia,serif;--lblfont:var(--font);--ink:#123524;--muted:#5b7767;--accent:#e24c85;--line:#f9b7d0;--faint:#fde6ef;--paper:#fff;--page:#fff;--on:#fde6ef;--ontext:#e24c85;--chipon:#e24c85;--chipontext:#fff;--lbl:#e24c85}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:22px 14px 18px}
+.card{position:relative;background:var(--paper);border:2px solid var(--accent);border-radius:22px;padding:22px 20px 18px}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--line);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--faint);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--lblfont);letter-spacing:.18em;text-transform:uppercase;color:var(--lbl)}
+.shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+h2{font:700 26px/1.1 var(--serif);margin:0}
+h2 em{font-style:italic;color:var(--accent);font-weight:600}
+.hint{font-size:12px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:8px;margin:12px 0}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 10px;border:1px solid var(--line);border-radius:16px;background:var(--paper);color:var(--ink);font:500 13px var(--font);cursor:pointer}
+.tile svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tile[aria-pressed="true"]{background:var(--on);border-color:var(--accent);color:var(--ontext)}
+.tile[aria-pressed="true"]::after{content:"";position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.vol{display:grid;grid-template-columns:auto minmax(0,1fr) 3.2em;gap:12px;align-items:center;font-size:13px;margin-bottom:10px}
+.vol output{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:400 13px var(--font);border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--chipon);border-color:var(--accent);color:var(--chipontext)}
+.chip:focus-visible,.tile:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.tile::after{animation:none}}
+
+</style>
+<main>
+<section class="card">
+  <span class="lbl">Soundscape</span>
+  <div class="shead"><h2>set the <em>mood</em></h2><span class="hint">Tap to layer sounds · made live in your browser</span></div>
+  <div class="tiles" id="tiles" role="group" aria-label="Sounds"></div>
+  <div class="vol"><label for="vol">Volume</label><input type="range" id="vol" min="0" max="100" value="70"><output id="volv" for="vol">70%</output></div>
+  <div class="chips" id="presets" role="group" aria-label="Sound presets"></div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+/* ================= soundscape (synthesised live with Web Audio) ================= */
+let AC=null,master=null,WHITE=null,BROWN=null;
+function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=vol()*vol();master.connect(AC.destination);
+  const n=AC.sampleRate*4;WHITE=AC.createBuffer(1,n,AC.sampleRate);BROWN=AC.createBuffer(1,n,AC.sampleRate);const w=WHITE.getChannelData(0),b=BROWN.getChannelData(0);let last=0;
+  for(let i=0;i<n;i++){w[i]=Math.random()*2-1;last=(last+.02*w[i])/1.02;b[i]=last*3.5}}
+  if(AC.state==='suspended')AC.resume();return AC}
+const vol=()=>+$('#vol').value/100;
+function loopSrc(buf){const s=AC.createBufferSource();s.buffer=buf;s.loop=true;s.start(0,Math.random()*3);return s}
+function filt(type,fr,q){const x=AC.createBiquadFilter();x.type=type;x.frequency.value=fr;if(q)x.Q.value=q;return x}
+function gain(v){const g=AC.createGain();g.gain.value=v;return g}
+function chain(...n){for(let i=0;i<n.length-1;i++)n[i].connect(n[i+1]);return n[n.length-1]}
+function burst(out,{f1,f2,type='bandpass',q=1,amp,dec}){const s=AC.createBufferSource();s.buffer=WHITE;const x=filt(type,f1+Math.random()*(f2-f1),q),g=gain(0),t=AC.currentTime;
+  g.gain.setValueAtTime(amp,t);g.gain.exponentialRampToValueAtTime(.0001,t+dec);chain(s,x,g,out);s.start(t,Math.random()*3);s.stop(t+dec+.05)}
+const SOUNDS={
+  rain:{label:'Rain',icon:'<path d="M7 15a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.5 1.5A3.5 3.5 0 0 1 17.5 15z"/><path d="M8 18l-1 2.5M12 18l-1 2.5M16 18l-1 2.5"/>',
+    make(out){const srcs=[loopSrc(WHITE),loopSrc(BROWN)];chain(srcs[0],filt('highpass',700),filt('lowpass',7500),gain(.2),out);chain(srcs[1],filt('lowpass',900),gain(.32),out);
+      return{srcs,timers:[setInterval(()=>{if(Math.random()<.45)burst(out,{f1:2200,f2:6500,q:2.5,amp:.05+Math.random()*.12,dec:.03+Math.random()*.04})},55)]}}},
+  fire:{label:'Fireplace',icon:'<path d="M12 21c-3.5 0-6-2.3-6-5.6 0-3.4 3-5.4 3.6-9.4 2 1.4 3 3.2 3 4.8 1-.6 1.6-1.8 1.8-3 2 1.8 3.6 4.4 3.6 7.6 0 3.3-2.5 5.6-6 5.6z"/><path d="M12 21c-1.5 0-2.6-1-2.6-2.5 0-1.6 1.4-2.5 2.6-4.2 1.2 1.7 2.6 2.6 2.6 4.2 0 1.5-1.1 2.5-2.6 2.5z"/>',
+    make(out){const srcs=[loopSrc(BROWN),loopSrc(WHITE)];chain(srcs[0],filt('lowpass',420),gain(.6),out);chain(srcs[1],filt('bandpass',2600,.6),gain(.012),out);
+      return{srcs,timers:[setInterval(()=>{if(Math.random()<.2){const big=Math.random()<.25;burst(out,{type:'highpass',f1:900,f2:2500,amp:big?.5:.12+Math.random()*.18,dec:big?.08:.015+Math.random()*.03});if(big&&Math.random()<.6)setTimeout(()=>burst(out,{type:'highpass',f1:1500,f2:3000,amp:.15,dec:.02}),40+Math.random()*80)}},60)]}}},
+  cafe:{label:'Café',icon:'<path d="M5 10h11v4.5A4.5 4.5 0 0 1 11.5 19h-2A4.5 4.5 0 0 1 5 14.5z"/><path d="M16 11.5h1.5a2 2 0 0 1 0 4H16"/><path d="M8.5 3.5c-.6.9.6 1.6 0 2.6M12 3.5c-.6.9.6 1.6 0 2.6"/>',
+    make(out){const srcs=[loopSrc(WHITE),loopSrc(WHITE)],g1=gain(.12),g2=gain(.06);chain(srcs[0],filt('bandpass',480,1.4),g1,out);chain(srcs[1],filt('bandpass',1150,2),g2,out);
+      const sway=setInterval(()=>{const t=AC.currentTime;g1.gain.linearRampToValueAtTime(.06+Math.random()*.16,t+.35);g2.gain.linearRampToValueAtTime(.02+Math.random()*.08,t+.3)},380);
+      const clink=setInterval(()=>{if(Math.random()<.22){const t=AC.currentTime,fr=2800+Math.random()*1600;[1,1.51].forEach((m,i)=>{const o=AC.createOscillator(),g=gain(0);o.frequency.value=fr*m;g.gain.setValueAtTime(i?.02:.04,t);g.gain.exponentialRampToValueAtTime(.0001,t+.5);chain(o,g,out);o.start(t);o.stop(t+.55)})}},900);
+      return{srcs,timers:[sway,clink]}}},
+  wind:{label:'Wind',icon:'<path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h15a3 3 0 1 1-3 3"/><path d="M3 16h7"/>',
+    make(out){const srcs=[loopSrc(WHITE)],bp=filt('bandpass',450,3.5),g=gain(.3);chain(srcs[0],bp,g,out);
+      const sweep=()=>{const t=AC.currentTime;bp.frequency.linearRampToValueAtTime(220+Math.random()*700,t+2.8);g.gain.linearRampToValueAtTime(.15+Math.random()*.4,t+2.8)};sweep();
+      return{srcs,timers:[setInterval(sweep,2900)]}}},
+  ocean:{label:'Ocean',icon:'<path d="M2 9c2 0 2-1.5 4-1.5S8 9 10 9s2-1.5 4-1.5S16 9 18 9s2-1.5 4-1.5"/><path d="M2 13c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M2 17c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/>',
+    make(out){const srcs=[loopSrc(BROWN),loopSrc(WHITE)],g=gain(.1),g2=gain(.01);chain(srcs[0],filt('lowpass',650),g,out);chain(srcs[1],filt('lowpass',2400),g2,out);
+      const wave=()=>{const t=AC.currentTime,pk=.5+Math.random()*.35,up=2.6+Math.random()*1.2;g.gain.linearRampToValueAtTime(pk,t+up);g.gain.linearRampToValueAtTime(.08,t+up+3.8);g2.gain.linearRampToValueAtTime(.09,t+up+.3);g2.gain.linearRampToValueAtTime(.008,t+up+3.5)};wave();
+      return{srcs,timers:[setInterval(wave,7200)]}}}
+};
+const PRESETS=[['Rainy library',['rain','fire']],['Seaside cottage',['ocean','wind']],['Corner café',['cafe','rain']],['Silence',[]]];
+const on={};
+function startSound(k){ac();const out=gain(0);out.connect(master);const h=SOUNDS[k].make(out);out.gain.linearRampToValueAtTime(1,AC.currentTime+1.5);on[k]={out,...h}}
+function stopSound(k){const h=on[k];if(!h)return;delete on[k];const t=AC.currentTime;h.out.gain.cancelScheduledValues(t);h.out.gain.setValueAtTime(h.out.gain.value,t);h.out.gain.linearRampToValueAtTime(0,t+.8);
+  h.timers.forEach(clearInterval);setTimeout(()=>{h.srcs.forEach(s=>{try{s.stop()}catch(e){}});h.out.disconnect()},900)}
+function paintSound(){document.querySelectorAll('.tile').forEach(b=>b.setAttribute('aria-pressed',!!on[b.dataset.k]));
+  const act=Object.keys(on).sort().join();document.querySelectorAll('#presets .chip').forEach(b=>b.setAttribute('aria-pressed',[...b.dataset.k.split(',')].filter(Boolean).sort().join()===act))}
+Object.entries(SOUNDS).forEach(([k,v])=>{const b=document.createElement('button');b.className='tile';b.dataset.k=k;b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+v.icon+'</svg>'+v.label;
+  b.onclick=()=>{on[k]?stopSound(k):startSound(k);paintSound()};$('#tiles').append(b)});
+PRESETS.forEach(([l,ks])=>{const b=document.createElement('button');b.className='chip';b.textContent=l;b.dataset.k=ks.join();
+  b.onclick=()=>{Object.keys(on).forEach(k=>{if(!ks.includes(k))stopSound(k)});ks.forEach(k=>{if(!on[k])startSound(k)});paintSound()};$('#presets').append(b)});
+$('#vol').value=store.get('nook-vol',70);$('#volv').textContent=$('#vol').value+'%';
+$('#vol').addEventListener('input',()=>{$('#volv').textContent=$('#vol').value+'%';store.set('nook-vol',+$('#vol').value);if(master)master.gain.setTargetAtTime(vol()*vol(),AC.currentTime,.05)});
+paintSound();
+
+
+</script>
