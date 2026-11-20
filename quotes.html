@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>saved lines</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<style>
+/* Same frame as the other reading widgets. Book lines are pink, fanfic lines are Slytherin green. Light only. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;
+--emerald:#1f6b47;--em-lt:#e3efe8;--em-mid:#b9d6c6;--paper:#fff;--gold:#d9b46a;color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:22px 14px 24px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:26px 16px;align-items:stretch}
+@media(min-width:780px){.layout{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}}
+.stack{display:grid;gap:26px;min-width:0;align-content:start}
+.card{position:relative;background:var(--paper);border:2px solid var(--pink);border-radius:22px;padding:24px 20px 18px;min-width:0}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+.badge{position:absolute;top:14px;right:16px;font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:5px 9px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font:400 12.5px var(--font);border:1px solid var(--pink-mid);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+.chip.g{border-color:var(--em-mid)}.chip.g[aria-pressed="true"]{background:var(--emerald);border-color:var(--emerald)}
+select,input,textarea{font:inherit;font-size:13.5px;color:var(--ink);border:1px solid var(--pink-mid);background:var(--paper);border-radius:12px;padding:8px 10px;min-width:0;width:100%}
+select.tagsel{width:auto;border-radius:999px;padding:4px 10px;font-size:12.5px}
+textarea{font:italic 500 17px/1.35 var(--serif);resize:vertical;min-height:64px}
+.chip:focus-visible,.ib:focus-visible,.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.deckcard:focus-visible,.recent button:focus-visible,.link:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* the deck */
+.deckwrap{display:flex;flex-direction:column}
+.deck{position:relative;margin:16px 6px 14px;flex:1;min-height:300px;perspective:1400px}
+.deck::before,.deck::after{content:"";position:absolute;inset:0;border:1px solid var(--pink-mid);border-radius:16px;background:#fff}
+.deck::before{transform:translate(8px,8px) rotate(1.2deg);opacity:.55}
+.deck::after{transform:translate(4px,4px) rotate(.5deg);opacity:.8}
+.deck.fic::before,.deck.fic::after{border-color:var(--em-mid)}
+.deckcard{position:absolute;inset:0;z-index:2;cursor:pointer;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.8,.3,1)}
+.deckcard.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;border:1.5px solid var(--pink);background:#fff;padding:18px 22px 14px;display:flex;flex-direction:column;box-shadow:0 10px 24px rgba(170,70,100,.12)}
+.face::before{content:"";position:absolute;inset:5px;border:1px solid var(--pink-lt);border-radius:12px;pointer-events:none}
+.back{transform:rotateY(180deg);background:#fff6fa}
+.fic .face{border-color:var(--emerald);box-shadow:0 10px 24px rgba(20,80,50,.12)}
+.fic .face::before{border-color:var(--em-lt)}
+.fic .back{background:#f3f8f5}
+.ctags{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font:700 9.5px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:5px 8px;background:var(--pink-lt);color:var(--pink)}
+.pill.solid{background:var(--pink);color:#fff}
+.fic .pill{background:var(--em-lt);color:var(--emerald)}.fic .pill.solid{background:var(--emerald);color:#fff}
+.qm{font:700 54px/0.6 var(--serif);color:var(--pink);margin-top:14px;height:22px}
+.fic .qm{color:var(--emerald)}
+.qt{flex:1;display:flex;align-items:center;font:italic 500 28px/1.28 var(--serif);text-wrap:pretty;overflow:hidden}
+.qt.long{font-size:22px}.qt.longer{font-size:18px}
+.note .qt{font-style:normal;font-weight:500}
+.cfoot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--muted)}
+.cfoot b{font:700 16px var(--serif);color:var(--ink)}
+.cfoot i{font:italic 600 15px var(--serif);color:var(--pink)}
+.fic .cfoot i{color:var(--emerald)}
+.heart{position:absolute;top:14px;right:16px;font-size:18px;color:var(--pink);opacity:.9}
+.fic .heart{color:var(--emerald)}
+.back h3{font:700 24px/1.1 var(--serif);margin:6px 0 2px}
+.back .au{font:italic 600 17px var(--serif);color:var(--pink)}
+.fic .back .au{color:var(--emerald)}
+.bq{flex:1;margin:12px 0;font:italic 500 16px/1.4 var(--serif);color:var(--muted);overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
+.facts{margin-top:auto;border-top:1px solid var(--pink-mid);padding-top:8px}
+.fic .facts{border-color:var(--em-mid)}
+.facts div{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:12.5px}
+.facts span:first-child{font-weight:700;color:var(--green)}
+.empty{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:italic 500 20px var(--serif);color:var(--muted);background:#fff;border-radius:16px;border:1.5px dashed var(--pink-mid)}
+.ctrl{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.nav{display:flex;align-items:center;gap:10px;font:600 15px var(--serif);font-variant-numeric:lining-nums}
+.ib{width:34px;height:34px;border-radius:50%;border:1px solid var(--pink-mid);background:#fff;color:var(--pink);font:600 16px/1 var(--font);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.ib[aria-pressed="true"]{background:var(--pink);color:#fff;border-color:var(--pink)}
+.ib:disabled{opacity:.35;cursor:default}
+.tools{display:flex;gap:6px;align-items:center}
+.btn{font:700 12px var(--font);letter-spacing:.1em;text-transform:uppercase;border:0;border-radius:999px;padding:10px 18px;cursor:pointer;background:var(--pink);color:#fff}
+.btn.alt{background:var(--green-soft);color:var(--green)}
+.btn.wide{width:100%;padding:12px}
+.btn.g{background:var(--emerald)}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* right column */
+.lotd p{margin:4px 0 4px;font:italic 500 20px/1.3 var(--serif);text-wrap:pretty}
+.lotd small{font:700 10px/1.4 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink)}
+.lotd.fic small{color:var(--emerald)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.link{font:600 12px var(--font);background:none;border:0;color:var(--green);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+.form{display:grid;gap:8px;margin-top:6px}
+.form .two{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.7fr) minmax(0,.9fr);gap:8px}
+.tagpick{display:flex;flex-wrap:wrap;gap:5px}
+.tagpick .chip{font-size:11.5px;padding:3px 10px}
+.counts{font-size:12px;color:var(--muted);text-align:right}
+.counts b{color:var(--ink)}
+.recent{margin-top:12px;border-top:1px solid var(--pink-mid);padding-top:8px}
+.recent h4{margin:0 0 4px;font:700 10px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.recent button{display:block;width:100%;text-align:left;background:none;border:0;padding:5px 0;cursor:pointer;font:inherit;color:inherit;border-bottom:1px solid var(--pink-lt)}
+.recent button:last-child{border-bottom:0}
+.recent em{display:block;font:italic 500 15.5px/1.3 var(--serif);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent span{font-size:11px;color:var(--muted)}
+.recent .fic em{color:var(--emerald)}
+.msg{font-size:12px;color:var(--muted);min-height:16px}
+.tag{font:700 10px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:var(--pink-lt);border-radius:999px;padding:4px 8px}
+@media (prefers-reduced-motion:reduce){.deckcard{transition:none}}
+</style></head>
+<body><main>
+<div class="layout">
+<section class="card deckwrap">
+  <span class="lbl">Saved lines</span>
+  <div class="chips" id="filters" role="group" aria-label="Show"></div>
+  <div class="deck" id="deck">
+    <div class="deckcard" id="dc" tabindex="0" role="button" aria-label="Flip card">
+      <div class="face front" id="front"></div>
+      <div class="face back" id="back"></div>
+    </div>
+    <div class="empty" id="empty" hidden>No lines here yet.</div>
+  </div>
+  <div class="ctrl">
+    <div class="nav"><button class="ib" id="prev" aria-label="Previous line">‹</button><span id="pos">0 / 0</span><button class="ib" id="next" aria-label="Next line">›</button></div>
+    <div class="tools">
+      <button class="ib" id="fav" aria-label="Favourite" aria-pressed="false">♥</button>
+      <button class="ib" id="copy" aria-label="Copy this line">⧉</button>
+      <button class="ib" id="shuf" aria-label="Shuffle">⤮</button>
+      <button class="btn alt" id="flip" style="text-transform:none;letter-spacing:.04em">flip</button>
+    </div>
+  </div>
+</section>
+
+<div class="stack">
+<section class="card lotd" id="lotd">
+  <span class="lbl">Line of the day</span>
+  <span class="badge" id="today"></span>
+  <p id="lotdQ"></p>
+  <div class="row"><small id="lotdS"></small><button class="link" id="lotdOpen">open in deck</button></div>
+</section>
+<section class="card">
+  <span class="lbl">Save a line</span>
+  <div class="counts" id="counts"></div>
+  <form class="form" id="form">
+    <textarea id="fq" placeholder="A line that stayed with you, or your own margin note…" aria-label="The line" required></textarea>
+    <div class="two">
+      <input id="fsrc" list="srcs" placeholder="Book or fic" aria-label="Book or fic" autocomplete="off">
+      <input id="fpage" type="number" min="1" inputmode="numeric" placeholder="Page" aria-label="Page or chapter">
+      <select id="fkind" aria-label="Kind"><option value="quote">Quote</option><option value="note">My note</option></select>
+    </div>
+    <datalist id="srcs"></datalist>
+    <div class="tagpick" id="ftags" role="group" aria-label="Topics"></div>
+    <button class="btn wide" id="save">save to the deck</button>
+    <div class="msg" id="msg" aria-live="polite"></div>
+  </form>
+  <div class="recent"><h4>Recently saved</h4><div id="recent"></div></div>
+  <div class="row" style="margin-top:6px"><span class="tag" id="sampleTag" hidden>example lines</span></div>
+</section>
+</div>
+</div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hash=s=>[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))|0,7);
+const KEY=new URLSearchParams(location.search).get('key')||'';
+const api=(p,o)=>fetch(p+(KEY?(p.includes('?')?'&':'?')+'key='+encodeURIComponent(KEY):''),o);
+const today=new Date().toLocaleDateString('en-CA');
+const fmt=d=>d?new Date(d+'T00:00').toLocaleDateString(undefined,{day:'numeric',month:'short'}):'';
+
+/* ---------- example lines (public-domain classics) until Notion loads ---------- */
+const SAMPLE=[
+ {id:'s1',q:'Whatever our souls are made of, his and mine are the same.',k:'book',src:'Wuthering Heights',a:'Emily Brontë',tags:['love'],kind:'quote',page:81,fav:true,d:'2026-11-04'},
+ {id:'s2',q:"I've dreamt in my life, dreams that have stayed with me ever after, and changed my ideas; they've gone through and through me, like wine through water, and altered the colour of my mind.",k:'book',src:'Wuthering Heights',a:'Emily Brontë',tags:['beautiful imagery'],kind:'quote',page:80,d:'2026-11-04'},
+ {id:'s3',q:'I am no bird; and no net ensnares me: I am a free human being with an independent will.',k:'book',src:'Jane Eyre',a:'Charlotte Brontë',tags:['advice'],kind:'quote',page:253,d:'2026-10-12'},
+ {id:'s4',q:'There is no charm equal to tenderness of heart.',k:'book',src:'Emma',a:'Jane Austen',tags:['love'],kind:'quote',d:'2026-09-30'},
+ {id:'s5',q:'Heathcliff so far: a storm in human form. Noting every time someone looks out of a window.',k:'book',src:'Wuthering Heights',a:'Emily Brontë',tags:[],kind:'note',page:112,d:'2026-11-06'},
+ {id:'s6',q:'Your own margin note on a fic goes here. Fic lines show up green.',k:'fic',src:'Example fic',a:'',tags:['friendship'],kind:'note',page:12,d:'2026-11-08'}];
+
+let Q=[],sources=[],topics=['love','grief','friendship','reconcilliation','advice','beautiful imagery'],fields={kind:false,page:false,fav:false,fic:false},live=false;
+let F=store.get('q-filter',{show:'all',tag:''}),order=null,idx=0,flipped=false,pick=[];
+
+const FILTERS=[['all','all'],['fav','♥ favourites'],['quote','quotes'],['note','my notes'],['book','books'],['fic','fanfic']];
+function view(){
+  let v=Q.filter(x=>F.show==='all'||(F.show==='fav'&&x.fav)||(F.show==='quote'&&x.kind==='quote')||(F.show==='note'&&x.kind==='note')||(F.show===x.k));
+  if(F.tag)v=v.filter(x=>x.tags.includes(F.tag));
+  if(order){const pos=new Map(order.map((id,i)=>[id,i]));v=[...v].sort((a,b)=>(pos.get(a.id)??1e9)-(pos.get(b.id)??1e9))}
+  return v}
+function filters(){
+  const allTags=[...new Set([...topics,...Q.flatMap(x=>x.tags)])];
+  $('#filters').innerHTML=FILTERS.map(([k,l])=>'<button class="chip'+(k==='fic'?' g':'')+'" data-k="'+k+'" aria-pressed="'+(F.show===k)+'">'+l+'</button>').join('')+
+    '<select class="tagsel" id="tagsel" aria-label="Topic"><option value="">any tag</option>'+allTags.map(t=>'<option'+(F.tag===t?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select>';
+  $('#filters').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{F.show=b.dataset.k;idx=0;flipped=false;store.set('q-filter',F);filters();card()});
+  $('#tagsel').onchange=e=>{F.tag=e.target.value;idx=0;flipped=false;store.set('q-filter',F);card()};
+}
+function size(q){return q.length>220?' longer':q.length>120?' long':''}
+function card(){
+  const v=view();idx=Math.max(0,Math.min(idx,v.length-1));
+  $('#empty').hidden=!!v.length;$('#dc').hidden=!v.length;
+  $('#pos').textContent=(v.length?idx+1:0)+' / '+v.length;
+  $('#prev').disabled=$('#next').disabled=v.length<2;
+  const x=v[idx];
+  $('#deck').classList.toggle('fic',!!x&&x.k==='fic');
+  if(!x){$('#fav').disabled=$('#copy').disabled=$('#flip').disabled=true;return}
+  $('#fav').disabled=$('#copy').disabled=$('#flip').disabled=false;
+  const fic=x.k==='fic';
+  $('#dc').className='deckcard'+(fic?' fic':'')+(x.kind==='note'?' note':'')+(flipped?' flipped':'');
+  $('#front').innerHTML=(x.fav?'<span class="heart" aria-label="favourite">♥</span>':'')+
+    '<div class="ctags"><span class="pill solid">'+(x.kind==='note'?'my note':'quote')+'</span>'+(fic?'<span class="pill">fanfic</span>':'')+x.tags.map(t=>'<span class="pill">'+esc(t)+'</span>').join('')+'</div>'+
+    '<div class="qm">'+(x.kind==='note'?'✎':'“')+'</div><div class="qt'+size(x.q)+'">'+esc(x.q)+'</div>'+
+    '<div class="cfoot"><span><b>'+esc(x.src||'unlinked')+'</b>'+(x.a?' · <i>'+esc(x.a)+'</i>':'')+'</span><span>'+(x.page?(fic?'ch. ':'p. ')+x.page+' · ':'')+'tap to flip</span></div>';
+  const same=Q.filter(y=>y.src&&y.src===x.src).length;
+  $('#back').innerHTML='<div class="ctags"><span class="pill solid">'+(fic?'fanfic':'book')+'</span></div><h3>'+esc(x.src||'Not linked to a book')+'</h3><div class="au">'+esc(x.a||'')+'</div>'+
+    '<p class="bq">'+(x.kind==='quote'?'“'+esc(x.q)+'”':esc(x.q))+'</p>'+
+    '<div class="facts">'+(x.page?'<div><span>'+(fic?'Chapter':'Page')+'</span><span>'+x.page+'</span></div>':'')+
+    '<div><span>Saved</span><span>'+esc(fmt(x.d)||'—')+'</span></div><div><span>Kind</span><span>'+(x.kind==='note'?'my margin note':'quote')+'</span></div>'+
+    '<div><span>Topics</span><span>'+esc(x.tags.join(', ')||'—')+'</span></div><div><span>Lines from this '+(fic?'fic':'book')+'</span><span>'+(x.src?same:'—')+'</span></div></div>';
+  $('#fav').setAttribute('aria-pressed',!!x.fav);$('#fav').title=fields.fav||!live?'Favourite':'Add a "favourite" checkbox in Notion to use this';
+}
+const move=d=>{const n=view().length;if(!n)return;idx=(idx+d+n)%n;flipped=false;card()};
+$('#prev').onclick=()=>move(-1);$('#next').onclick=()=>move(1);
+const flip=()=>{flipped=!flipped;$('#dc').classList.toggle('flipped',flipped)};
+$('#dc').onclick=flip;$('#flip').onclick=flip;
+$('#dc').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}};
+addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')move(1);if(e.key==='ArrowLeft')move(-1)});
+$('#shuf').onclick=()=>{order=Q.map(x=>[Math.random(),x.id]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);idx=0;flipped=false;card();note('Shuffled.')};
+$('#copy').onclick=async()=>{const x=view()[idx];if(!x)return;const t='“'+x.q+'”'+(x.src?' ('+x.src+(x.a?', '+x.a:'')+')':'');
+  try{await navigator.clipboard.writeText(t);note('Copied.')}catch(e){note('Copy is blocked here. Select the text instead.')}};
+$('#fav').onclick=async()=>{const x=view()[idx];if(!x)return;
+  if(live&&!fields.fav){note('To use favourites, add a "favourite" checkbox to your quotes database in Notion.');return}
+  x.fav=!x.fav;card();
+  if(live){try{const r=await api('/api/quotes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id,fav:x.fav})});if(!r.ok)throw 0}catch(e){x.fav=!x.fav;card();note("Couldn't update Notion.")}}};
+
+function lotd(){
+  const pool=Q.filter(x=>x.kind==='quote');$('#today').textContent=fmt(today);
+  const x=pool.length?pool[Math.abs(hash(today))%pool.length]:null;
+  $('#lotd').classList.toggle('fic',!!x&&x.k==='fic');
+  $('#lotdQ').textContent=x?'“'+x.q+'”':'Save a quote and it will turn up here.';
+  $('#lotdS').textContent=x?[x.src,x.a].filter(Boolean).join(' · '):'';
+  $('#lotdOpen').hidden=!x;
+  $('#lotdOpen').onclick=()=>{F={show:'all',tag:''};order=null;filters();idx=view().findIndex(y=>y.id===x.id);flipped=false;card()};
+}
+function recent(){
+  const r=[...Q].sort((a,b)=>(b.d||'').localeCompare(a.d||'')).slice(0,3);
+  $('#recent').innerHTML=r.map(x=>'<button class="'+(x.k==='fic'?'fic':'')+'" data-id="'+esc(x.id)+'"><em>'+(x.kind==='quote'?'“'+esc(x.q)+'”':esc(x.q))+'</em><span>'+esc(x.src||'unlinked')+(x.d?' · '+esc(fmt(x.d)):'')+'</span></button>').join('')||'<span class="msg">Nothing saved yet.</span>';
+  $('#recent').querySelectorAll('button').forEach(b=>b.onclick=()=>{F={show:'all',tag:''};order=null;filters();idx=view().findIndex(y=>y.id===b.dataset.id);flipped=false;card()});
+  const n=Q.length,nq=Q.filter(x=>x.kind==='quote').length;
+  $('#counts').innerHTML='<b>'+n+'</b> lines · <b>'+nq+'</b> quotes · <b>'+(n-nq)+'</b> notes';
+}
+function form(){
+  $('#srcs').innerHTML=sources.map(s=>'<option value="'+esc(s.t+(s.k==='fic'?' (fic)':''))+'">').join('');
+  $('#ftags').innerHTML=topics.map(t=>'<button type="button" class="chip" aria-pressed="'+pick.includes(t)+'" data-t="'+esc(t)+'">'+esc(t)+'</button>').join('');
+  $('#ftags').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const t=b.dataset.t;pick=pick.includes(t)?pick.filter(x=>x!==t):[...pick,t];form()});
+  $('#fpage').hidden=live&&!fields.page;$('#fkind').hidden=live&&!fields.kind;
+}
+const note=t=>{$('#msg').textContent=t};
+$('#fsrc').addEventListener('input',()=>{const fic=/\(fic\)$/.test($('#fsrc').value);$('#save').classList.toggle('g',fic);$('#fpage').placeholder=fic?'Chapter':'Page'});
+$('#form').addEventListener('submit',async e=>{
+  e.preventDefault();const q=$('#fq').value.trim();if(!q){$('#fq').focus();return}
+  const raw=$('#fsrc').value.trim(),isFic=/\(fic\)$/.test(raw),name=raw.replace(/\s*\(fic\)$/,'').toLowerCase();
+  const s=sources.find(x=>x.t.toLowerCase()===name&&(x.k==='fic')===isFic)||sources.find(x=>x.t.toLowerCase()===name);
+  const item={id:'m'+Date.now(),q,k:s&&s.k==='fic'?'fic':'book',src:s?s.t:raw.replace(/\s*\(fic\)$/,''),a:s?s.a:'',tags:[...pick],kind:$('#fkind').value,page:+$('#fpage').value||null,fav:false,d:today};
+  if(live){
+    $('#save').disabled=true;$('#save').textContent='saving…';
+    try{const r=await api('/api/quotes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q,kind:item.kind,page:item.page,topics:item.tags,bookId:s&&s.k==='book'?s.id:null,ficId:s&&s.k==='fic'?s.id:null})});
+      const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('error '+r.status));item.id=j.id||item.id;
+      note(s||!raw?'Saved to your Notion quotes.':'Saved to Notion. No book matched "'+raw+'", so it isn\'t linked.')}
+    catch(err){note("Couldn't save to Notion: "+err.message);$('#save').disabled=false;$('#save').textContent='save to the deck';return}
+    $('#save').disabled=false;$('#save').textContent='save to the deck';
+  }else{note('Added to this example deck. On your site it saves to Notion.')}
+  Q.unshift(item);order=null;$('#fq').value='';$('#fpage').value='';pick=[];
+  F={show:'all',tag:''};store.set('q-filter',F);idx=0;flipped=false;all()});
+function all(){filters();card();lotd();recent();form();$('#sampleTag').hidden=live}
+
+Q=SAMPLE.map(x=>({...x}));sources=[{id:'b1',k:'book',t:'Wuthering Heights',a:'Emily Brontë'},{id:'b2',k:'book',t:'Jane Eyre',a:'Charlotte Brontë'},{id:'f1',k:'fic',t:'Example fic',a:''}];all();
+(async()=>{
+  try{const r=await api('/api/quotes',{cache:'no-store'});const j=await r.json().catch(()=>({}));
+    if(r.status===401){note('This deck is private. Open it from your Notion embed link.');return}
+    if(!r.ok||!Array.isArray(j.quotes))throw 0;
+    Q=j.quotes;sources=j.sources||[];if(Array.isArray(j.topics)&&j.topics.length)topics=j.topics;fields=j.fields||fields;live=true;idx=0;all();
+  }catch(e){note('Showing example lines. Your Notion quotes load on your reading-shelf site.')}
+})();
+</script>
+</body></html>
