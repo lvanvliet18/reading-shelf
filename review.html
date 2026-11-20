@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>review letters</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<style>
+/* Same frame as "my shelf", "tbr jar" and "current reads". Books are pink. Light only. */
+:root{--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+--serif:"Cormorant Garamond","EB Garamond",Georgia,"Times New Roman",serif;
+--ink:#123524;--muted:#5b7767;--pink:#e24c85;--pink-mid:#f9b7d0;--pink-lt:#fde6ef;--green:#12894a;--green-soft:#e2f4ea;
+--emerald:#1f6b47;--paper:#fff;color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14px/1.5 var(--font)}
+main{max-width:1020px;margin:0 auto;padding:22px 14px 24px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:26px 16px;align-items:start}
+@media(min-width:760px){.layout{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}}
+.card{position:relative;background:var(--paper);border:2px solid var(--pink);border-radius:22px;padding:24px 20px 18px;min-width:0}
+.card::before{content:"";position:absolute;inset:4px;border:2px solid var(--pink-mid);border-radius:18px;pointer-events:none}
+.card::after{content:"";position:absolute;inset:9px;border:1px solid var(--pink-lt);border-radius:13px;pointer-events:none}
+.card>*{position:relative;z-index:1}
+.lbl{z-index:2;position:absolute;top:-10px;left:26px;background:var(--paper);padding:0 10px;font:700 11px/20px var(--font);letter-spacing:.18em;text-transform:uppercase;color:var(--pink)}
+h1{font:700 32px/1.05 var(--serif);margin:0 0 2px}
+h1 em{font-style:italic;color:var(--pink);font-weight:600}
+.meta{color:var(--muted);font-size:13px}.meta b{color:var(--pink)}
+
+/* envelope pile */
+.pile{list-style:none;margin:16px 0 4px;padding:0;display:grid;gap:10px}
+.env{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;text-align:left;cursor:pointer;
+  font:inherit;color:inherit;border:1px solid #f4d7e1;border-radius:8px;padding:12px 14px 12px 12px;
+  background:linear-gradient(135deg,#fff 0 60%,#fff7fa 100%);box-shadow:0 1px 0 #f3d2de,0 6px 14px rgba(170,70,100,.08);transition:transform .25s cubic-bezier(.2,.9,.3,1.2),box-shadow .25s}
+.env::before{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+  background:linear-gradient(to bottom right,transparent calc(50% - .5px),#f6dbe5 50%,transparent calc(50% + .5px)) left top/50% 60% no-repeat,
+             linear-gradient(to bottom left,transparent calc(50% - .5px),#f6dbe5 50%,transparent calc(50% + .5px)) right top/50% 60% no-repeat;opacity:.7}
+.env:hover{transform:translateY(-2px) rotate(-.4deg);box-shadow:0 1px 0 #f3d2de,0 10px 20px rgba(170,70,100,.14)}
+.env[aria-pressed="true"]{border-color:var(--pink);box-shadow:0 0 0 2px var(--pink-lt),0 10px 20px rgba(170,70,100,.14)}
+.env.done{opacity:.55}
+.env:focus-visible,.btn:focus-visible,.chip:focus-visible,.star:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+textarea:focus{outline:none}
+.letter:has(textarea:focus){border-color:var(--pink-mid);box-shadow:0 0 0 3px var(--pink-lt),0 8px 18px rgba(170,70,100,.12)}
+.letter:has(textarea:focus) .sign{opacity:1}
+.seal{width:40px;height:40px}
+.etxt{min-width:0}
+.et{font:700 19px/1.1 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ea{font:italic 600 15px/1.3 var(--serif);color:var(--pink)}
+.ewait{text-align:right;font:700 10px/1.3 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.ewait b{display:block;font:700 22px/1 var(--serif);letter-spacing:0;color:var(--ink)}
+.ewait.old b{color:var(--pink)}
+.more{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+
+/* the letter */
+.letter{position:relative;border-radius:6px;padding:16px 18px 16px 40px;
+background:repeating-linear-gradient(#fff 0 25px,#f6dbe5 25px 26px);box-shadow:0 1px 0 #f3d2de,0 8px 18px rgba(170,70,100,.12);border:1px solid #f4d7e1}
+.letter::before{content:"";position:absolute;left:26px;top:0;bottom:0;width:2px;background:#f1a7bd}
+.letter.show{animation:unfold .55s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes unfold{0%{opacity:0;transform:translateY(-14px) rotate(-3deg) scaleY(.4)}100%{opacity:1;transform:none}}
+.kicker{font:700 10.5px/26px var(--font);letter-spacing:.16em;text-transform:uppercase;color:var(--pink)}
+.letter h2{margin:0;font:700 30px/1.05 var(--serif);padding-right:86px;text-wrap:balance}
+.letter h2 i{font-weight:600;color:var(--pink)}
+.stamp{position:absolute;top:14px;right:14px;border:2px solid var(--pink);color:var(--pink);border-radius:8px;padding:4px 8px;font:700 10px/1.25 var(--font);letter-spacing:.12em;text-transform:uppercase;text-align:center;transform:rotate(8deg);opacity:.85}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 2px;min-height:26px}
+.rl{font:700 10px/26px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green);min-width:54px}
+.stars{display:flex;gap:2px}
+.star{border:0;background:none;padding:0 1px;cursor:pointer;font-size:22px;line-height:26px;color:#f3c9d8}
+.star.on{color:var(--pink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:400 12.5px var(--font);border:1px solid var(--pink-mid);background:var(--paper);color:var(--ink);border-radius:999px;padding:3px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--pink);border-color:var(--pink);color:#fff}
+textarea{display:block;width:100%;margin-top:4px;border:0;background:transparent;resize:vertical;min-height:130px;color:var(--ink);
+  font:500 17px/26px var(--serif);padding:0;background-attachment:local}
+textarea::placeholder{color:#c68aa1;font-style:italic}
+.sign{font:italic 600 17px/26px var(--serif);color:var(--pink);text-align:right}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{font:700 13px var(--font);letter-spacing:.08em;text-transform:uppercase;border:0;border-radius:999px;padding:12px 22px;cursor:pointer;background:var(--pink);color:#fff}
+.btn.alt{background:var(--green-soft);color:var(--green)}
+.btn.ghost{background:none;color:var(--muted);padding:12px 10px}
+.btn:disabled{opacity:.4;cursor:default}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:240px;color:var(--muted);font:italic 500 19px/1.3 var(--serif);padding:10px 20px 10px 0}
+.empty small{font:400 12px var(--font);font-style:normal;margin-top:6px}
+.note{font-size:12px;color:var(--muted);min-height:18px;margin-top:8px}
+@media (prefers-reduced-motion:reduce){.letter.show{animation:none}.env{transition:none}}
+</style></head>
+<body><main>
+<div class="layout">
+<section class="card">
+  <span class="lbl">Books to be reviewed</span>
+  <h1>letters you <em>owe</em></h1>
+  <div class="meta" id="meta">loading your finished books…</div>
+  <ul class="pile" id="pile"></ul>
+  <div class="more" id="more"></div>
+</section>
+
+<section class="card">
+  <span class="lbl">Write it while it's fresh</span>
+  <div id="letter"></div>
+  <div class="acts" id="acts" hidden>
+    <button class="btn" id="save">seal &amp; save ♡</button>
+    <button class="btn alt" id="oldest">oldest first</button>
+    <button class="btn ghost" id="later">later</button>
+  </div>
+  <div class="note" id="note" aria-live="polite">Every envelope is a book marked read in Notion with no review yet.</div>
+</section>
+</div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- example: your "to be reviewed" books as of today ---------- */
+const SAMPLE=[
+ {id:'b1',t:'The Ever King',a:'L.J. Andrews',fin:'2026-11-18',p:464,r:4},
+ {id:'b2',t:'Onyx Storm',a:'Rebecca Yarros',fin:'2026-08-07',p:544,r:4},
+ {id:'b3',t:'Iron Flame',a:'Rebecca Yarros',fin:'2026-07-16',p:640,r:4},
+ {id:'b4',t:'Fourth Wing',a:'Rebecca Yarros',fin:'2026-06-30',p:528,r:5},
+ {id:'b5',t:'A Court of Frost and Starlight',a:'Sarah J. Maas',fin:'2024-04-04',p:272,r:2},
+ {id:'b6',t:'A Court of Mist and Fury',a:'Sarah J. Maas',fin:'2023-12-31',p:656,r:3},
+ {id:'b7',t:'A Court of Wings and Ruin',a:'Sarah J. Maas',fin:'2023-11-30',p:736,r:3},
+ {id:'b8',t:'A Court of Thorns and Roses',a:'Sarah J. Maas',fin:'2023-11-17',p:448,r:1}];
+
+const FEEL=['swooned','sobbed','gasped','laughed','raged','yawned','obsessed','comforted'];
+const PROMPTS=['The moment I can\'t stop thinking about…','I wish the author had…','I\'d hand this to someone who…','The character who stole it for me…','It surprised me when…'];
+const SHOW=5;
+
+let books=[],live=false,sel=null,open=false,drafts=store.get('rv-drafts',{}),sealed=new Set(store.get('rv-sealed',[]));
+const today=()=>new Date(new Date().toLocaleDateString('en-CA')+'T00:00');
+const daysAgo=d=>Math.max(0,Math.round((today()-new Date(d+'T00:00'))/864e5));
+const waitTxt=n=>n<1?['today','']:n<14?[n,n===1?'day':'days']:n<60?[Math.round(n/7),'weeks']:n<730?[Math.round(n/30),'months']:[Math.round(n/365),'years'];
+const fmtDay=d=>new Date(d+'T00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+const draft=id=>drafts[id]||(drafts[id]={r:0,f:[],txt:''});
+const saveDrafts=()=>store.set('rv-drafts',drafts);
+
+/* wax seal tinted by rating: deeper pink for the books you loved */
+const SEALC=['#f4b6c8','#f1a7bd','#ec8aae','#e5709c','#e24c85','#c93a72'];
+function seal(r,done){
+  const c=done?'#b9d6c6':SEALC[r||0],d=done?'#8fc1a5':'#c95a83';
+  return '<svg class="seal" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3c3 0 4 2 7 2.5s5 .5 6.5 3-.5 4.5.5 7 3 4 3 6.5-2.5 3.5-3 6 1 5-1.5 6.5-4.5.5-7 1.5S23 39 20 39s-4-2.5-6.5-3-5 .5-7-1.5.5-4-1-6.5-3-3.5-3-6 2.5-4 3-6.5-1-5 .5-7 4.5-1 6.5-2S17 3 20 3z" fill="'+c+'"/>'+
+    '<circle cx="20" cy="21" r="10.5" fill="none" stroke="'+d+'" stroke-width="1" opacity=".7"/>'+
+    (done?'<path d="M15 21l3.5 3.5L26 17" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>':
+    '<path d="M20 27s-6.5-3.9-6.5-8.1a3.6 3.6 0 0 1 6.5-2.1 3.6 3.6 0 0 1 6.5 2.1C26.5 23.1 20 27 20 27z" fill="#fff" opacity=".85"/>')+
+    '<ellipse cx="14" cy="11" rx="4" ry="2" fill="#fff" opacity=".45" transform="rotate(-30 14 11)"/></svg>'}
+
+function pile(){
+  const left=books.filter(b=>!sealed.has(b.id)),oldest=left.reduce((m,b)=>Math.max(m,daysAgo(b.fin)),0);
+  $('#meta').innerHTML=left.length?'<b>'+left.length+'</b> '+(left.length===1?'book is':'books are')+' waiting on your thoughts'+(oldest>365?' · the oldest for <b>'+Math.round(oldest/365)+' years</b>':''):'every letter is written ♡';
+  const list=[...books].sort((a,b)=>(sealed.has(a.id)-sealed.has(b.id))||(a.fin<b.fin?1:-1));
+  const shown=list.slice(0,open?list.length:SHOW);
+  $('#pile').innerHTML=shown.map(b=>{const n=daysAgo(b.fin),[v,u]=waitTxt(n),done=sealed.has(b.id),d=drafts[b.id];
+    return '<li><button class="env'+(done?' done':'')+'" data-id="'+esc(b.id)+'" aria-pressed="'+(sel===b.id)+'">'+seal(b.r,done)+
+      '<span class="etxt"><span class="et" style="display:block">'+esc(b.t)+'</span><span class="ea">'+esc(b.a)+(d&&d.txt&&!done?' · draft':'')+'</span></span>'+
+      '<span class="ewait'+(n>180&&!done?' old':'')+'">'+(done?'sealed':'<b>'+v+'</b>'+u+' ago')+'</span></button></li>'}).join('');
+  $('#more').innerHTML=list.length>SHOW?'<button class="btn ghost" id="toggle">'+(open?'show fewer':'show all '+list.length)+'</button>':'';
+  $('#pile').querySelectorAll('.env').forEach(e=>e.onclick=()=>pick(e.dataset.id,true));
+  const t=$('#toggle');if(t)t.onclick=()=>{open=!open;pile()};
+}
+
+function letter(anim){
+  const b=sel&&books.find(x=>x.id===sel);$('#acts').hidden=!b;
+  if(!b){$('#letter').innerHTML='<div class="letter"><div class="empty">Pick an envelope to start a review.<small>Or press oldest first and clear the backlog.</small></div></div>';return}
+  const d=draft(b.id),r=d.r||b.r||0,n=daysAgo(b.fin),done=sealed.has(b.id);
+  const prompt=PROMPTS[[...b.id].reduce((a,c)=>a+c.charCodeAt(0),0)%PROMPTS.length];
+  $('#letter').innerHTML='<div class="letter'+(anim?' show':'')+'">'+
+    '<div class="stamp">finished<br>'+esc(fmtDay(b.fin).replace(/, \d{4}$/,''))+'</div>'+
+    '<div class="kicker">a review · '+(b.p?b.p+' pages · ':'')+(n<1?'finished today':n+' days ago')+'</div>'+
+    '<h2>Dear <i>'+esc(b.t)+'</i>,</h2>'+
+    '<div class="row"><span class="rl">rating</span><span class="stars" role="radiogroup" aria-label="rating">'+
+      [1,2,3,4,5].map(i=>'<button class="star'+(i<=r?' on':'')+'" data-s="'+i+'" role="radio" aria-checked="'+(i===r)+'" aria-label="'+i+' stars">★</button>').join('')+'</span></div>'+
+    '<div class="row"><span class="rl">I…</span><span class="chips">'+FEEL.map(f=>'<button class="chip" data-f="'+f+'" aria-pressed="'+d.f.includes(f)+'">'+f+'</button>').join('')+'</span></div>'+
+    '<textarea id="txt" aria-label="Your review" placeholder="'+esc(prompt)+'"'+(done?' readonly':'')+'>'+esc(d.txt)+'</textarea>'+
+    '<div class="sign">— yours, lilly ♡</div></div>';
+  $('#letter').querySelectorAll('.star').forEach(s=>s.onclick=()=>{d.r=+s.dataset.s;saveDrafts();letter(false)});
+  $('#letter').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const f=c.dataset.f;d.f=d.f.includes(f)?d.f.filter(x=>x!==f):[...d.f,f];saveDrafts();c.setAttribute('aria-pressed',d.f.includes(f))});
+  $('#txt').oninput=e=>{d.txt=e.target.value;saveDrafts();btns()};
+  btns();
+}
+function btns(){const b=books.find(x=>x.id===sel),d=b&&draft(b.id),done=b&&sealed.has(b.id);
+  $('#save').disabled=!b||done||!(d.txt.trim()||d.f.length);$('#save').textContent=done?'sealed ✓':'seal & save ♡'}
+
+function pick(id,anim){sel=id;pile();letter(anim)}
+const note=t=>{$('#note').textContent=t};
+$('#oldest').onclick=()=>{const b=books.filter(x=>!sealed.has(x.id)).sort((a,b)=>a.fin<b.fin?-1:1)[0];if(b){open=true;pick(b.id,true);note('The one that has waited longest. Even two lines count.')}};
+$('#later').onclick=()=>{sel=null;pile();letter();note('Saved as a draft. It will be here when you come back.')};
+$('#save').onclick=async()=>{
+  const b=books.find(x=>x.id===sel);if(!b)return;const d=draft(b.id);
+  if(!live){sealed.add(b.id);store.set('rv-sealed',[...sealed]);pile();letter(false);note('Example only. On your site this creates the review in [book notes & reviews] and links it to the book.');return}
+  $('#save').disabled=true;$('#save').textContent='saving…';
+  try{const r=await api('/api/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.id,rating:d.r||b.r,feelings:d.f,text:d.txt})});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('error '+r.status));
+    sealed.add(b.id);store.set('rv-sealed',[...sealed]);delete drafts[b.id];saveDrafts();pile();letter(false);note('Saved to Notion and linked to '+b.t+'.')}
+  catch(e){note("Couldn't save to Notion: "+e.message);btns()}};
+
+/* ---------- load from the reading-shelf site ---------- */
+const KEY=new URLSearchParams(location.search).get('key')||'';
+const api=(p,o)=>fetch(p+(KEY?(p.includes('?')?'&':'?')+'key='+encodeURIComponent(KEY):''),o);
+books=SAMPLE;pile();letter();
+(async()=>{
+  try{const r=await api('/api/review',{cache:'no-store'});const j=await r.json().catch(()=>({}));
+    if(r.status===401){note('This page is private. Open it from your Notion embed link.');return}
+    if(!r.ok||!Array.isArray(j.books))throw new Error(j.error||r.status);
+    books=j.books;live=true;sealed=new Set();pile();letter();
+  }catch(e){note('Showing your books as of today. Live data loads once this is on your reading-shelf site.')}
+})();
+</script>
+</body></html>
