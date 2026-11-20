@@ -275,7 +275,7 @@ Q=SAMPLE.map(x=>({...x}));sources=[{id:'b1',k:'book',t:'Wuthering Heights',a:'Em
   try{const r=await api('/api/quotes',{cache:'no-store'});const j=await r.json().catch(()=>({}));
     if(r.status===401){note('This deck is private. Open it from your Notion embed link.');return}
     if(!r.ok||!Array.isArray(j.quotes))throw 0;
-    Q=j.quotes;sources=j.sources||[];if(Array.isArray(j.topics)&&j.topics.length)topics=j.topics;fields=j.fields||fields;live=true;idx=0;all();
+    Q=j.quotes.map(x=>({...x,q:String(x.q).trim().replace(/^["“”'‘’]+|["“”'‘’]+$/g,'').trim()}));sources=j.sources||[];if(Array.isArray(j.topics)&&j.topics.length)topics=j.topics;fields=j.fields||fields;live=true;idx=0;all();
   }catch(e){note('Showing example lines. Your Notion quotes load on your reading-shelf site.')}
 })();
 </script>
